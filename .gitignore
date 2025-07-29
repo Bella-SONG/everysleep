@@ -44,11 +44,60 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
 .env.local
 .env.production
 .env.development
+.env.staging
+.env.test
+config.json
+secrets.json
+keys.json
 
-# Supabase config (contains sensitive data)
+# API Keys and Credentials
+**/config/api_keys.dart
+**/config/credentials.dart
+**/constants/api_keys.dart
+**/constants/credentials.dart
+**/constants/secrets.dart
 lib/constants/supabase_config.dart
+
+# Firebase and Google Services
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# iOS Certificates and Provisioning
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
+ios/Runner.xcworkspace/xcshareddata/
+
+# Android Signing
+android/key.properties
+android/app/upload-keystore.jks
+android/app/debug.keystore
+android/app/release-keystore.jks
+*.keystore
+*.jks
+
+# OAuth and Authentication
+oauth_config.json
+auth_config.dart
+kakao_config.dart
+
+# Database configs
+database.json
+db_config.dart
+
+# Backup files that might contain sensitive data
+*.backup
+*.bak
+*.tmp
+
+# Documentation that might contain sensitive info
+docs/
+documentation/
+*.md
+README_internal.md

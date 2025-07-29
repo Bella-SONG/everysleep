@@ -152,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -163,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: AppTheme.spacingM),
                     Text(
-                      authProvider.user?.email ?? '',
+                      authProvider.user?.kakaoAccount?.profile?.nickname ?? '사용자',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -189,7 +189,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: _isEditing ? () => _selectDate(context) : null,
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    labelText: '생년월일',
                     prefixIcon: const Icon(Icons.calendar_today),
                     enabled: _isEditing,
                   ),
@@ -201,6 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: _selectedDate != null
                           ? AppTheme.textPrimaryColor
                           : AppTheme.textSecondaryColor,
+                      fontSize: 16,
                     ),
                   ),
                 ),

@@ -37,33 +37,66 @@ class _MainNavigationState extends State<MainNavigation> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (hasCurrentTrack) const BottomPlayer(),
-          BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: '홈',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.music_note_outlined),
-                activeIcon: Icon(Icons.music_note),
-                label: '추천음악',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: '내 정보',
-              ),
-            ],
-            selectedItemColor: AppTheme.primaryColor,
-            unselectedItemColor: AppTheme.textSecondaryColor,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            elevation: 8,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: (index) => setState(() => _selectedIndex = index),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.home_outlined, size: 28),
+                  ),
+                  activeIcon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.home, size: 28),
+                  ),
+                  label: '홈',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.graphic_eq_outlined, size: 28),
+                  ),
+                  activeIcon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.graphic_eq, size: 28),
+                  ),
+                  label: '추천음악',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.person_outline, size: 28),
+                  ),
+                  activeIcon: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.person, size: 28),
+                  ),
+                  label: '내 정보',
+                ),
+              ],
+              selectedItemColor: AppTheme.primaryColor,
+              unselectedItemColor: AppTheme.textSecondaryColor,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              selectedFontSize: 16,
+              unselectedFontSize: 14,
+              iconSize: 28,
+            ),
           ),
         ],
       ),

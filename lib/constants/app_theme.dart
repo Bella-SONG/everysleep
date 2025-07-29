@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF6B4EFF);
-  static const Color secondaryColor = Color(0xFF9C88FF);
-  static const Color backgroundColor = Color(0xFFF5F5FA);
+  // 시니어 친화적 색상 팔레트
+  static const Color primaryColor = Color(0xFF2D3748);        // 다크 그레이 (블랙에 가까운)
+  static const Color secondaryColor = Color(0xFF4A5568);      // 미디엄 그레이
+  static const Color accentColor = Color(0xFF50C878);         // 부드러운 그린
+  static const Color backgroundColor = Color(0xFFFAFAFA);     // 뉴트럴 화이트
   static const Color surfaceColor = Colors.white;
-  static const Color textPrimaryColor = Color(0xFF2D3436);
-  static const Color textSecondaryColor = Color(0xFF636E72);
-  static const Color errorColor = Color(0xFFE74C3C);
-  static const Color successColor = Color(0xFF00B894);
+  static const Color cardColor = Color(0xFFF0F4F8);          // 연한 카드 배경
+  static const Color textPrimaryColor = Color(0xFF1A202C);    // 높은 대비 텍스트
+  static const Color textSecondaryColor = Color(0xFF4A5568); // 중간 대비 텍스트
+  static const Color errorColor = Color(0xFFE53E3E);
+  static const Color successColor = Color(0xFF38A169);
+  static const Color warningColor = Color(0xFFD69E2E);
 
   static const double radiusSmall = 8.0;
   static const double radiusMedium = 16.0;
   static const double radiusLarge = 24.0;
+  
+  static const double borderRadiusS = 8.0;
+  static const double borderRadiusM = 16.0;
+  static const double borderRadiusL = 24.0;
 
   static const double spacingXS = 4.0;
   static const double spacingS = 8.0;
@@ -44,14 +53,17 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        minimumSize: const Size.fromHeight(56),
+        minimumSize: const Size.fromHeight(64), // 버튼 높이 증가
+        padding: const EdgeInsets.symmetric(horizontal: spacingL, vertical: spacingM),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
         textStyle: const TextStyle(
-          fontSize: 18,
+          fontSize: 20, // 버튼 텍스트 크기 증가
           fontWeight: FontWeight.w600,
         ),
+        elevation: 2,
+        shadowColor: primaryColor.withOpacity(0.3),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -96,40 +108,55 @@ class AppTheme {
       ),
     ),
     textTheme: const TextTheme(
+      // 시니어 친화적으로 폰트 크기 증가 + 프리텐다드 적용
       headlineLarge: TextStyle(
-        fontSize: 32,
+        fontFamily: 'Pretendard',
+        fontSize: 36,
         fontWeight: FontWeight.w700,
         color: textPrimaryColor,
+        height: 1.2,
       ),
       headlineMedium: TextStyle(
-        fontSize: 24,
+        fontFamily: 'Pretendard',
+        fontSize: 28,
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
+        height: 1.3,
       ),
       headlineSmall: TextStyle(
+        fontFamily: 'Pretendard',
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: textPrimaryColor,
+        height: 1.3,
+      ),
+      titleLarge: TextStyle(
+        fontFamily: 'Pretendard',
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
-      ),
-      titleLarge: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: textPrimaryColor,
+        height: 1.4,
       ),
       titleMedium: TextStyle(
-        fontSize: 16,
+        fontFamily: 'Pretendard',
+        fontSize: 18,
         fontWeight: FontWeight.w500,
         color: textPrimaryColor,
+        height: 1.4,
       ),
       bodyLarge: TextStyle(
-        fontSize: 16,
+        fontFamily: 'Pretendard',
+        fontSize: 18,
         fontWeight: FontWeight.w400,
         color: textPrimaryColor,
+        height: 1.5,
       ),
       bodyMedium: TextStyle(
-        fontSize: 14,
+        fontFamily: 'Pretendard',
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         color: textSecondaryColor,
+        height: 1.5,
       ),
     ),
   );

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_profile.dart';
 
 class UserProvider extends ChangeNotifier {
-  final SupabaseClient _supabase = Supabase.instance.client;
   UserProfile? _userProfile;
   bool _isLoading = false;
 
@@ -15,20 +14,22 @@ class UserProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) {
-        _isLoading = false;
-        notifyListeners();
-        return;
+      // SharedPreferences에서 사용자 프로필 로드
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('kakao_user_id');
+      final nickname = prefs.getString('user_nickname');
+      final birthDateStr = prefs.getString('user_birth_date');
+      final gender = prefs.getString('user_gender');
+
+      if (userId != null && nickname != null && birthDateStr != null && gender != null) {
+        _userProfile = UserProfile(
+          userId: userId,
+          nickname: nickname,
+          birthDate: DateTime.parse(birthDateStr),
+          gender: gender,
+        );
       }
 
-      final response = await _supabase
-          .from('user_profiles')
-          .select()
-          .eq('user_id', userId)
-          .single();
-
-      _userProfile = UserProfile.fromJson(response);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -47,24 +48,19 @@ class UserProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final userId = _supabase.auth.currentUser?.id;
+      // SharedPreferences에서 사용자 ID 가져오기
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('kakao_user_id');
       if (userId == null) {
         _isLoading = false;
         notifyListeners();
         return false;
       }
 
-      final data = {
-        'user_id': userId,
-        'nickname': nickname,
-        'birth_date': birthDate.toIso8601String(),
-        'gender': gender,
-        'updated_at': DateTime.now().toIso8601String(),
-      };
-
-      await _supabase
-          .from('user_profiles')
-          .upsert(data);
+      // SharedPreferences에 프로필 정보 저장
+      await prefs.setString('user_nickname', nickname);
+      await prefs.setString('user_birth_date', birthDate.toIso8601String());
+      await prefs.setString('user_gender', gender);
 
       _userProfile = UserProfile(
         userId: userId,
