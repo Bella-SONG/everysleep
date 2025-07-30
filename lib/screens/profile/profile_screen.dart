@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/font_size_provider.dart';
 import '../../constants/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -115,6 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final fontSizeProvider = context.watch<FontSizeProvider>();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -231,36 +233,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: AppTheme.spacingL),
+              _buildFontSizeSection(fontSizeProvider),
               if (_isEditing) ...[
                 const SizedBox(height: AppTheme.spacingXL),
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
+                      child: InkWell(
+                        onTap: () {
                           setState(() {
                             _isEditing = false;
                             _loadUserProfile();
                           });
                         },
-                        child: const Text('취소'),
+                        borderRadius: BorderRadius.circular(25),
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              '취소',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppTheme.spacingM),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: userProvider.isLoading ? null : _saveProfile,
-                        child: userProvider.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : const Text('저장'),
+                      child: InkWell(
+                        onTap: userProvider.isLoading ? null : _saveProfile,
+                        borderRadius: BorderRadius.circular(25),
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Center(
+                            child: userProvider.isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text(
+                                    '저장',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -280,5 +318,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildFontSizeSection(FontSizeProvider fontSizeProvider) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacingL),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.text_fields,
+                color: AppTheme.primaryColor,
+                size: 20,
+              ),
+              const SizedBox(width: AppTheme.spacingS),
+              Text(
+                '글자 크기',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingM),
+          Text(
+            '현재 설정: ${fontSizeProvider.currentLevelName}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.textSecondaryColor,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingM),
+          Text(
+            '미리보기: 안녕하세요! EverySleep입니다.',
+            style: fontSizeProvider.applyFontSize(
+              Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingM),
+          Wrap(
+            spacing: AppTheme.spacingS,
+            children: FontSizeLevel.values.map((level) {
+              final isSelected = fontSizeProvider.currentLevel == level;
+              return ChoiceChip(
+                label: Text(_getFontSizeLevelName(level)),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) {
+                    fontSizeProvider.setFontSize(level);
+                  }
+                },
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                checkmarkColor: AppTheme.primaryColor,
+                labelStyle: TextStyle(
+                  color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getFontSizeLevelName(FontSizeLevel level) {
+    switch (level) {
+      case FontSizeLevel.small:
+        return '작게';
+      case FontSizeLevel.normal:
+        return '보통';
+      case FontSizeLevel.large:
+        return '크게';
+      case FontSizeLevel.extraLarge:
+        return '매우 크게';
+    }
   }
 }

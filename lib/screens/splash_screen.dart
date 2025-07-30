@@ -240,41 +240,34 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 
                 const SizedBox(height: AppTheme.spacingXL),
                 
-                // 서브타이틀 (슬라이드 업 + 페이드 인)
-                if (_showSubtitle)
-                  AnimatedBuilder(
-                    animation: _fadeAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 30 * (1 - _fadeAnimation.value)),
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Text(
-                            subtitle,
-                            style: TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 19,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              letterSpacing: 1.2,
-                              shadows: [
-                                Shadow(
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 10,
-                                  color: Colors.black87,
-                                ),
-                                Shadow(
-                                  offset: const Offset(0, 0),
-                                  blurRadius: 15,
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                ),
-                              ],
-                            ),
-                          ),
+                // 서브타이틀 (자연스러운 페이드인만)
+                AnimatedOpacity(
+                  opacity: _showSubtitle ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeInOut,
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 19,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      letterSpacing: 1.2,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 10,
+                          color: Colors.black87,
                         ),
-                      );
-                    },
+                        Shadow(
+                          offset: const Offset(0, 0),
+                          blurRadius: 15,
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ],
+                    ),
                   ),
+                ),
               ],
             ),
           ),

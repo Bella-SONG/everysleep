@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 
 class AudioProvider extends ChangeNotifier {
   final AudioPlayer _musicPlayer = AudioPlayer();
@@ -18,6 +19,8 @@ class AudioProvider extends ChangeNotifier {
   bool _isRepeatOne = false;
   Duration? _sleepTimerDuration;
   DateTime? _sleepTimerEndTime;
+  NatureSound? _currentNatureSound;
+  bool _isNaturePlaying = false;
 
   Track? get currentTrack => _currentTrack;
   List<Track> get playlist => _playlist;
@@ -31,6 +34,8 @@ class AudioProvider extends ChangeNotifier {
   bool get hasNext => _currentIndex < _playlist.length - 1;
   Duration? get sleepTimerDuration => _sleepTimerDuration;
   DateTime? get sleepTimerEndTime => _sleepTimerEndTime;
+  NatureSound? get currentNatureSound => _currentNatureSound;
+  bool get isNaturePlaying => _isNaturePlaying;
 
   AudioProvider() {
     _init();
@@ -62,6 +67,15 @@ class AudioProvider extends ChangeNotifier {
         }
       }
     });
+
+    _naturePlayer.playerStateStream.listen((state) {
+      _isNaturePlaying = state.playing;
+      notifyListeners();
+    });
+
+    // 자연음 플레이어 기본 설정
+    _naturePlayer.setVolume(_natureVolume);
+    _naturePlayer.setLoopMode(LoopMode.all);
   }
 
   Future<void> loadTrack(Track track) async {
@@ -91,14 +105,21 @@ class AudioProvider extends ChangeNotifier {
 
   Future<void> play() async {
     await _musicPlayer.play();
+    if (_currentNatureSound != null && !_isNaturePlaying) {
+      await _naturePlayer.play();
+    }
   }
 
   Future<void> pause() async {
     await _musicPlayer.pause();
+    if (_isNaturePlaying) {
+      await _naturePlayer.pause();
+    }
   }
 
   Future<void> stop() async {
     await _musicPlayer.stop();
+    await _naturePlayer.stop();
     _position = Duration.zero;
     notifyListeners();
   }
@@ -140,12 +161,34 @@ class AudioProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadNatureSound(String url) async {
+  Future<void> loadNatureSound(NatureSound? sound) async {
+    if (sound == null) {
+      await _naturePlayer.stop();
+      _currentNatureSound = null;
+      _isNaturePlaying = false;
+      notifyListeners();
+      return;
+    }
+
+    _currentNatureSound = sound;
     await _naturePlayer.setAudioSource(
-      AudioSource.uri(Uri.parse(url)),
+      AudioSource.uri(Uri.parse(sound.url)),
     );
-    await _naturePlayer.setLoopMode(LoopMode.all);
-    await _naturePlayer.play();
+    
+    if (_isPlaying) {
+      await _naturePlayer.play();
+    }
+    notifyListeners();
+  }
+
+  Future<void> toggleNatureSound() async {
+    if (_currentNatureSound == null) return;
+    
+    if (_isNaturePlaying) {
+      await _naturePlayer.pause();
+    } else {
+      await _naturePlayer.play();
+    }
   }
 
   void setSleepTimer(Duration duration) {

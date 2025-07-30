@@ -101,3 +101,10 @@ docs/
 documentation/
 *.md
 README_internal.md
+
+# Build outputs
+android/build/
+ios/build/
+ios/Pods/
+ios/Podfile.lock
+android/.gradle/

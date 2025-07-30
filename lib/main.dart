@@ -6,6 +6,7 @@ import 'package:app_links/app_links.dart';
 import 'providers/auth_provider.dart';
 import 'providers/audio_provider.dart';
 import 'providers/user_provider.dart';
+import 'providers/font_size_provider.dart';
 import 'utils/router.dart';
 import 'constants/app_theme.dart';
 
@@ -13,7 +14,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // 카카오 SDK 초기화를 최우선으로
-  KakaoSdk.init(nativeAppKey: '2adb87534e7bf9098b2112040ce6167d');
+  const kakaoAppKey = String.fromEnvironment('KAKAO_APP_KEY', defaultValue: '2adb87534e7bf9098b2112040ce6167d');
+  KakaoSdk.init(nativeAppKey: kakaoAppKey);
   debugPrint('카카오 SDK 초기화 완료');
 
   runApp(const MyApp());
@@ -56,7 +58,8 @@ class _MyAppState extends State<MyApp> {
   void _handleKakaoCallback(Uri uri) {
     debugPrint('🎯 카카오 콜백 처리: ${uri.toString()}');
     
-    if (uri.scheme == 'kakao2adb87534e7bf9098b2112040ce6167d' && uri.host == 'oauth') {
+    const kakaoAppKey = String.fromEnvironment('KAKAO_APP_KEY', defaultValue: '2adb87534e7bf9098b2112040ce6167d');
+    if (uri.scheme == 'kakao$kakaoAppKey' && uri.host == 'oauth') {
       final code = uri.queryParameters['code'];
       if (code != null) {
         debugPrint('✅ 카카오 OAuth 코드 수신: ${code.substring(0, 10)}...');
@@ -88,12 +91,17 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AudioProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'EverySleep',
-        theme: AppTheme.lightTheme,
-        routerConfig: router,
-        debugShowCheckedModeBanner: false,
+      child: Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProvider, child) {
+          return MaterialApp.router(
+            title: 'EverySleep',
+            theme: AppTheme.getLightTheme(fontSizeProvider.scaleFactor),
+            routerConfig: router,
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }

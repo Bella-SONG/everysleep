@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/audio_provider.dart';
 import '../../constants/app_theme.dart';
 import '../../widgets/sleep_timer_dialog.dart';
+import '../../widgets/nature_sound_selector.dart';
 
 class PlayerScreen extends StatelessWidget {
   const PlayerScreen({super.key});
@@ -43,13 +44,12 @@ class PlayerScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppTheme.spacingL),
-          child: Column(
-            children: [
-              Expanded(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppTheme.spacingL),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildAlbumArt(track.thumbnail),
                     const SizedBox(height: AppTheme.spacingXL),
@@ -58,12 +58,15 @@ class PlayerScreen extends StatelessWidget {
                     _buildProgressBar(context, audioProvider),
                     const SizedBox(height: AppTheme.spacingL),
                     _buildControls(context, audioProvider),
+                    const SizedBox(height: AppTheme.spacingXL),
+                    _buildVolumeControls(context, audioProvider),
+                    const SizedBox(height: 120), // 자연음 선택기를 위한 여백
                   ],
                 ),
               ),
-              _buildVolumeControls(context, audioProvider),
-            ],
-          ),
+            ),
+            const NatureSoundSelector(),
+          ],
         ),
       ),
     );

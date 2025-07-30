@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/audio_provider.dart';
 import '../../constants/app_theme.dart';
 import '../../widgets/app_logo.dart';
+import '../../utils/sample_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -135,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
               
               // 감정 선택 섹션
               Text(
-                '기분을 선택해주세요',
+                '오늘은 어떤 마음이신가요?',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -191,10 +193,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildEmotionSelector() {
     final emotions = [
-      {'emoji': '😊', 'label': '활력', 'key': 'energy', 'color': const Color(0xFF2D3748)},
-      {'emoji': '😰', 'label': '스트레스', 'key': 'stress', 'color': const Color(0xFF2D3748)},
-      {'emoji': '😟', 'label': '불안', 'key': 'anxiety', 'color': const Color(0xFF2D3748)},
-      {'emoji': '😴', 'label': '수면', 'key': 'sleep', 'color': const Color(0xFF2D3748)},
+      {'emoji': '😊', 'label': '활력', 'key': 'energy', 'color': const Color(0xFF50C878)}, // 활력적인 그린
+      {'emoji': '😰', 'label': '스트레스', 'key': 'stress', 'color': const Color(0xFFFF7043)}, // 따뜻한 오렌지
+      {'emoji': '😟', 'label': '불안', 'key': 'anxiety', 'color': const Color(0xFF5C6BC0)}, // 차분한 퍼플
+      {'emoji': '😴', 'label': '수면', 'key': 'sleep', 'color': const Color(0xFF42A5F5)}, // 평온한 블루
     ];
 
     return SingleChildScrollView(
@@ -355,10 +357,19 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       childAspectRatio: 0.8,
-      children: themes.map((theme) {
+      children: themes.asMap().entries.map((entry) {
+        final index = entry.key;
+        final theme = entry.value;
         return GestureDetector(
-          onTap: () {
-            DefaultTabController.of(context).animateTo(1);
+          onTap: () async {
+            // 테마별 트랙 로드하고 재생
+            final tracks = SampleData.getAllTracks();
+            final audioProvider = context.read<AudioProvider>();
+            await audioProvider.loadPlaylist(tracks, startIndex: index % tracks.length);
+            await audioProvider.play();
+            if (mounted) {
+              context.push('/player');
+            }
           },
           child: Container(
             decoration: BoxDecoration(

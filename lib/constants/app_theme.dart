@@ -29,7 +29,8 @@ class AppTheme {
   static const double spacingL = 24.0;
   static const double spacingXL = 32.0;
 
-  static ThemeData lightTheme = ThemeData(
+  static ThemeData getLightTheme(double fontScale) {
+    return ThemeData(
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,
     colorScheme: const ColorScheme.light(
@@ -58,8 +59,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-        textStyle: const TextStyle(
-          fontSize: 20, // 버튼 텍스트 크기 증가
+        textStyle: TextStyle(
+          fontSize: 20 * fontScale, // 버튼 텍스트 크기 증가
           fontWeight: FontWeight.w600,
         ),
         elevation: 2,
@@ -69,8 +70,8 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: primaryColor,
-        textStyle: const TextStyle(
-          fontSize: 16,
+        textStyle: TextStyle(
+          fontSize: 16 * fontScale,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -98,66 +99,70 @@ class AppTheme {
         borderRadius: BorderRadius.circular(radiusMedium),
         borderSide: const BorderSide(color: errorColor, width: 2),
       ),
-      labelStyle: const TextStyle(
-        fontSize: 16,
+      labelStyle: TextStyle(
+        fontSize: 16 * fontScale,
         color: textSecondaryColor,
       ),
-      hintStyle: const TextStyle(
-        fontSize: 16,
+      hintStyle: TextStyle(
+        fontSize: 16 * fontScale,
         color: textSecondaryColor,
       ),
     ),
-    textTheme: const TextTheme(
+    textTheme: TextTheme(
       // 시니어 친화적으로 폰트 크기 증가 + 프리텐다드 적용
       headlineLarge: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 36,
+        fontSize: 36 * fontScale,
         fontWeight: FontWeight.w700,
         color: textPrimaryColor,
         height: 1.2,
       ),
       headlineMedium: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 28,
+        fontSize: 28 * fontScale,
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
         height: 1.3,
       ),
       headlineSmall: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 22,
+        fontSize: 22 * fontScale,
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
         height: 1.3,
       ),
       titleLarge: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 20,
+        fontSize: 20 * fontScale,
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
         height: 1.4,
       ),
       titleMedium: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 18,
+        fontSize: 18 * fontScale,
         fontWeight: FontWeight.w500,
         color: textPrimaryColor,
         height: 1.4,
       ),
       bodyLarge: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 18,
+        fontSize: 18 * fontScale,
         fontWeight: FontWeight.w400,
         color: textPrimaryColor,
         height: 1.5,
       ),
       bodyMedium: TextStyle(
         fontFamily: 'Pretendard',
-        fontSize: 16,
+        fontSize: 16 * fontScale,
         fontWeight: FontWeight.w400,
         color: textSecondaryColor,
         height: 1.5,
       ),
     ),
   );
+  }
+
+  // 기본 테마 (호환성을 위해 유지)
+  static ThemeData lightTheme = getLightTheme(1.0);
 }
