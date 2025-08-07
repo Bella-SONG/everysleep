@@ -84,11 +84,11 @@ class AudioProvider extends ChangeNotifier {
       AudioSource.uri(
         Uri.parse(track.url),
         tag: MediaItem(
-          id: track.id,
+          id: track.id.toString(),
           album: track.category,
           title: track.title,
           artist: track.artist,
-          artUri: Uri.parse(track.thumbnail),
+          artUri: track.thumbnail != null ? Uri.parse(track.thumbnail!) : null,
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../providers/audio_provider.dart';
 import '../constants/app_theme.dart';
 import '../models/nature_sound.dart';
@@ -20,40 +21,46 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
 
   static final List<NatureSound> natureSounds = [
     NatureSound(
-      id: 'rain',
-      name: '빗소리',
-      icon: '🌧️',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
-    ),
-    NatureSound(
-      id: 'ocean',
-      name: '파도소리',
-      icon: '🌊',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
-    ),
-    NatureSound(
-      id: 'forest',
-      name: '숲속소리',
-      icon: '🌲',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
-    ),
-    NatureSound(
-      id: 'birds',
+      id: 'E001',
       name: '새소리',
-      icon: '🐦',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+      icon: Symbols.raven,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E001_BIRD ASMR1.mp3',
+      color: const Color(0xFFFFC107), // 진한 노란색
     ),
     NatureSound(
-      id: 'fire',
-      name: '모닥불',
-      icon: '🔥',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
+      id: 'E002',
+      name: '장작불소리',
+      icon: Icons.local_fire_department,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E002_FIRE ASMR.mp3',
+      color: const Color(0xFFFF5722), // 진한 주황색
     ),
     NatureSound(
-      id: 'thunder',
-      name: '천둥소리',
-      icon: '⛈️',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
+      id: 'E003',
+      name: '빗소리',
+      icon: Icons.grain,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E003_RAIN ASMR2.mp3',
+      color: const Color(0xFF4CAF50), // 진한 연두색
+    ),
+    NatureSound(
+      id: 'E004',
+      name: '물소리',
+      icon: Icons.water_drop,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E005_WATER ASMR.mp3',
+      color: const Color(0xFF03A9F4), // 진한 하늘색
+    ),
+    NatureSound(
+      id: 'E005',
+      name: '파도소리', 
+      icon: Icons.waves,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E004_WAVE ASMR.mp3',
+      color: const Color(0xFF2196F3), // 진한 파랑
+    ),
+    NatureSound(
+      id: 'E006',
+      name: '바람소리',
+      icon: Icons.air,
+      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E006_WIND ASMR.mp3',
+      color: const Color(0xFF607D8B), // 진한 회색
     ),
   ];
 
@@ -103,30 +110,39 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
     final currentSound = audioProvider.currentNatureSound;
 
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-        ],
-      ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 헤더 (항상 표시)
-          InkWell(
+          // 헤더 (항상 표시) - 드래그 제스처 적용
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onTap: _toggleExpanded,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+            onVerticalDragEnd: (details) {
+              // 드래그 속도와 방향에 따른 확장/축소
+              if (details.primaryVelocity != null) {
+                if (details.primaryVelocity! < -200 && !_isExpanded) {
+                  // 위로 드래그 시 확장
+                  _toggleExpanded();
+                } else if (details.primaryVelocity! > 200 && _isExpanded) {
+                  // 아래로 드래그 시 축소
+                  _toggleExpanded();
+                }
+              }
+            },
             child: Container(
               padding: const EdgeInsets.all(AppTheme.spacingL),
               child: Column(
@@ -136,52 +152,104 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: _isExpanded ? AppTheme.secondaryColor.withValues(alpha: 0.6) : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacingM),
                   Row(
                     children: [
-                      Icon(
-                        Icons.water_drop,
-                        color: AppTheme.secondaryColor,
-                        size: 20,
-                      ),
-                      const SizedBox(width: AppTheme.spacingS),
-                      Expanded(
-                        child: Text(
-                          currentSound != null 
-                              ? '${currentSound.icon} ${currentSound.name}' 
-                              : '자연음 선택',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: currentSound != null 
+                              ? AppTheme.secondaryColor.withValues(alpha: 0.1)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            currentSound?.icon ?? Icons.music_note,
                             color: currentSound != null 
-                                ? AppTheme.secondaryColor 
-                                : AppTheme.textPrimaryColor,
+                                ? currentSound.color 
+                                : Colors.grey.shade400,
+                            size: 28,
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.spacingM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              currentSound != null ? currentSound.name : '자연음 추가하기',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: currentSound != null 
+                                    ? AppTheme.textPrimaryColor 
+                                    : AppTheme.textSecondaryColor,
+                              ),
+                            ),
+                            Text(
+                              currentSound != null 
+                                  ? '음악과 함께 재생 중' 
+                                  : '편안한 배경음을 선택해보세요',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppTheme.textSecondaryColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (currentSound != null)
                         Container(
                           margin: const EdgeInsets.only(right: AppTheme.spacingS),
-                          child: TextButton(
-                            onPressed: () {
-                              audioProvider.loadNatureSound(null);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              '끄기',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textSecondaryColor,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: GestureDetector(
+                              onTap: () {
+                                audioProvider.loadNatureSound(null);
+                                // 이벤트 전파 방지 - 부모 GestureDetector로 전달되지 않음
+                              },
+                              // 드래그 제스처를 차단하여 부모로 전달되지 않도록 함
+                              onVerticalDragEnd: (details) {
+                                // 빈 핸들러로 제스처 소비
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.red.shade200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: Colors.red.shade600,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '끄기',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.red.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -284,11 +352,12 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
+                                    Icon(
                                       sound.icon,
-                                      style: TextStyle(
-                                        fontSize: isSelected ? 32 : 28,
-                                      ),
+                                      size: isSelected ? 48 : 44,
+                                      color: isSelected 
+                                          ? sound.color 
+                                          : sound.color.withValues(alpha: 0.85),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(

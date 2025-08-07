@@ -7,13 +7,65 @@ class TrackTile extends StatelessWidget {
   final Track track;
   final VoidCallback onTap;
   final bool showDuration;
+  final bool showBpm;
+  final bool showEffectKeywords;
+  final bool showRanking;
+  final int? ranking;
 
   const TrackTile({
     super.key,
     required this.track,
     required this.onTap,
     this.showDuration = true,
+    this.showBpm = true,
+    this.showEffectKeywords = true,
+    this.showRanking = false,
+    this.ranking,
   });
+
+  Widget _buildTrackImage() {
+    final thumbnail = track.thumbnail ?? '';
+    
+    if (thumbnail.startsWith('assets/')) {
+      // 로컬 asset 이미지
+      return Image.asset(
+        thumbnail,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: 60,
+          height: 60,
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          child: Icon(
+            track.isAsmr ? Icons.headphones : Icons.music_note,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      );
+    } else {
+      // 네트워크 이미지
+      return CachedNetworkImage(
+        imageUrl: thumbnail,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          child: Icon(
+            track.isAsmr ? Icons.headphones : Icons.music_note,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +79,7 @@ class TrackTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -35,27 +87,40 @@ class TrackTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              child: CachedNetworkImage(
-                imageUrl: track.thumbnail,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                  child: const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
+            if (showRanking && ranking != null) ...[
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: ranking! <= 3 
+                      ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: ranking! <= 3 
+                        ? AppTheme.primaryColor 
+                        : Colors.grey.shade300,
+                    width: 1,
                   ),
                 ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                  child: const Icon(
-                    Icons.music_note,
-                    color: AppTheme.primaryColor,
+                child: Center(
+                  child: Text(
+                    '$ranking',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: ranking! <= 3 
+                          ? AppTheme.primaryColor 
+                          : Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ),
+              const SizedBox(width: AppTheme.spacingM),
+            ],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              child: _buildTrackImage(),
             ),
             const SizedBox(width: AppTheme.spacingM),
             Expanded(
@@ -75,13 +140,83 @@ class TrackTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (showDuration) ...[
-                    const SizedBox(height: AppTheme.spacingXS),
-                    Text(
-                      _formatDuration(track.duration),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 12,
+                  const SizedBox(height: AppTheme.spacingXS),
+                  Row(
+                    children: [
+                      if (showDuration && track.durationSeconds != null) ...[
+                        Icon(
+                          Icons.schedule,
+                          size: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          track.formattedDuration,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
                           ),
+                        ),
+                      ],
+                      if (showBpm && track.bpm != null) ...[
+                        if (showDuration && track.durationSeconds != null) 
+                          const SizedBox(width: 8),
+                        Icon(
+                          Icons.favorite,
+                          size: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${track.bpm}BPM',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                      if (track.category != null && track.category!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            track.category!,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (showEffectKeywords && track.effectKeywords.isNotEmpty) ...[
+                    const SizedBox(height: AppTheme.spacingXS),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 2,
+                      children: track.effectKeywords.map((keyword) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            keyword,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ],
@@ -96,11 +231,5 @@ class TrackTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 }

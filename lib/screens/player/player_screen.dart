@@ -7,8 +7,43 @@ import '../../constants/app_theme.dart';
 import '../../widgets/sleep_timer_dialog.dart';
 import '../../widgets/nature_sound_selector.dart';
 
-class PlayerScreen extends StatelessWidget {
+class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key});
+
+  @override
+  State<PlayerScreen> createState() => _PlayerScreenState();
+}
+
+class _PlayerScreenState extends State<PlayerScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadTrackFromRoute();
+  }
+
+  void _loadTrackFromRoute() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final routeState = GoRouterState.of(context);
+      final extra = routeState.extra as Map<String, dynamic>?;
+      
+      if (extra != null) {
+        final track = extra['track'];
+        final playlist = extra['playlist'] as List?;
+        final currentIndex = extra['currentIndex'] as int?;
+        
+        if (track != null) {
+          final audioProvider = context.read<AudioProvider>();
+          if (playlist != null && playlist.isNotEmpty) {
+            // currentIndex가 있으면 해당 인덱스부터 시작, 없으면 0부터
+            audioProvider.loadPlaylist(List.from(playlist), startIndex: currentIndex ?? 0);
+          } else {
+            audioProvider.loadTrack(track);
+          }
+          audioProvider.play();
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,92 +65,83 @@ class PlayerScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.timer_outlined),
-            onPressed: () => _showSleepTimerDialog(context),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: track.thumbnail?.startsWith('assets/') == true
+                ? AssetImage(track.thumbnail!) as ImageProvider
+                : CachedNetworkImageProvider(track.thumbnail ?? ''),
+            fit: BoxFit.cover,
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppTheme.spacingL),
-                child: Column(
-                  children: [
-                    _buildAlbumArt(track.thumbnail),
-                    const SizedBox(height: AppTheme.spacingXL),
-                    _buildTrackInfo(context, track),
-                    const SizedBox(height: AppTheme.spacingXL),
-                    _buildProgressBar(context, audioProvider),
-                    const SizedBox(height: AppTheme.spacingL),
-                    _buildControls(context, audioProvider),
-                    const SizedBox(height: AppTheme.spacingXL),
-                    _buildVolumeControls(context, audioProvider),
-                    const SizedBox(height: 120), // 자연음 선택기를 위한 여백
-                  ],
-                ),
-              ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.3),
+                Colors.black.withValues(alpha: 0.8),
+              ],
             ),
-            const NatureSoundSelector(),
-          ],
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // 커스텀 앱바
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacingM),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => context.pop(),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.timer_outlined, color: Colors.white),
+                        onPressed: () => _showSleepTimerDialog(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppTheme.spacingL),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppTheme.spacingXL * 3), // 상단 여백
+                        _buildTrackInfo(context, track),
+                        const SizedBox(height: AppTheme.spacingXL * 2),
+                        _buildProgressBar(context, audioProvider),
+                        const SizedBox(height: AppTheme.spacingXL),
+                        _buildControls(context, audioProvider),
+                        const SizedBox(height: AppTheme.spacingXL),
+                        _buildVolumeControls(context, audioProvider),
+                        const SizedBox(height: 120), // 자연음 선택기를 위한 여백
+                      ],
+                    ),
+                  ),
+                ),
+                const NatureSoundSelector(),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildAlbumArt(String thumbnail) {
-    return Container(
-      width: 280,
-      height: 280,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        child: CachedNetworkImage(
-          imageUrl: thumbnail,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            child: const Icon(
-              Icons.music_note,
-              size: 100,
-              color: AppTheme.primaryColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTrackInfo(BuildContext context, track) {
     return Column(
       children: [
         Text(
           track.title,
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -124,7 +150,7 @@ class PlayerScreen extends StatelessWidget {
         Text(
           track.artist,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textSecondaryColor,
+                color: Colors.white.withValues(alpha: 0.8),
               ),
           textAlign: TextAlign.center,
         ),
@@ -145,7 +171,7 @@ class PlayerScreen extends StatelessWidget {
             value: audioProvider.position.inSeconds.toDouble(),
             max: audioProvider.duration.inSeconds.toDouble(),
             activeColor: AppTheme.primaryColor,
-            inactiveColor: AppTheme.primaryColor.withOpacity(0.2),
+            inactiveColor: AppTheme.primaryColor.withValues(alpha: 0.2),
             onChanged: (value) {
               audioProvider.seek(Duration(seconds: value.toInt()));
             },
@@ -158,11 +184,15 @@ class PlayerScreen extends StatelessWidget {
             children: [
               Text(
                 _formatDuration(audioProvider.position),
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
               ),
               Text(
                 _formatDuration(audioProvider.duration),
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
               ),
             ],
           ),
@@ -182,13 +212,13 @@ class PlayerScreen extends StatelessWidget {
                 : Icons.repeat,
             color: audioProvider.isRepeatOne
                 ? AppTheme.primaryColor
-                : AppTheme.textSecondaryColor,
+                : Colors.white.withValues(alpha: 0.7),
           ),
           iconSize: 28,
           onPressed: audioProvider.toggleRepeatOne,
         ),
         IconButton(
-          icon: const Icon(Icons.skip_previous),
+          icon: const Icon(Icons.skip_previous, color: Colors.white),
           iconSize: 40,
           onPressed: audioProvider.hasPrevious
               ? audioProvider.skipToPrevious
@@ -202,7 +232,7 @@ class PlayerScreen extends StatelessWidget {
             color: AppTheme.primaryColor,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.3),
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 5),
               ),
@@ -224,7 +254,7 @@ class PlayerScreen extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.skip_next),
+          icon: const Icon(Icons.skip_next, color: Colors.white),
           iconSize: 40,
           onPressed: audioProvider.hasNext
               ? audioProvider.skipToNext
@@ -235,7 +265,7 @@ class PlayerScreen extends StatelessWidget {
             Icons.nightlight_round,
             color: audioProvider.sleepTimerDuration != null
                 ? AppTheme.primaryColor
-                : AppTheme.textSecondaryColor,
+                : Colors.white.withValues(alpha: 0.7),
           ),
           iconSize: 28,
           onPressed: () => _showSleepTimerDialog(context),
@@ -248,14 +278,14 @@ class PlayerScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacingL),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: Colors.black.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.music_note, size: 20),
+              const Icon(Icons.music_note, size: 20, color: Colors.white),
               const SizedBox(width: AppTheme.spacingM),
               Expanded(
                 child: SliderTheme(
@@ -267,19 +297,21 @@ class PlayerScreen extends StatelessWidget {
                     value: audioProvider.musicVolume,
                     onChanged: audioProvider.setMusicVolume,
                     activeColor: AppTheme.primaryColor,
-                    inactiveColor: AppTheme.primaryColor.withOpacity(0.2),
+                    inactiveColor: AppTheme.primaryColor.withValues(alpha: 0.2),
                   ),
                 ),
               ),
               Text(
                 '${(audioProvider.musicVolume * 100).toInt()}%',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                    ),
               ),
             ],
           ),
           Row(
             children: [
-              const Icon(Icons.water_drop, size: 20),
+              const Icon(Icons.water_drop, size: 20, color: Colors.white),
               const SizedBox(width: AppTheme.spacingM),
               Expanded(
                 child: SliderTheme(
@@ -291,13 +323,15 @@ class PlayerScreen extends StatelessWidget {
                     value: audioProvider.natureVolume,
                     onChanged: audioProvider.setNatureVolume,
                     activeColor: AppTheme.secondaryColor,
-                    inactiveColor: AppTheme.secondaryColor.withOpacity(0.2),
+                    inactiveColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
                   ),
                 ),
               ),
               Text(
                 '${(audioProvider.natureVolume * 100).toInt()}%',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                    ),
               ),
             ],
           ),

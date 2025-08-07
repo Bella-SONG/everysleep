@@ -1,6 +1,8 @@
-class Track {
-  final int id; // 정규화된 스키마: int형 SERIAL PK
-  final String code; // 정규화된 스키마: 고유 코드 (S001, S002 등)
+import 'keyword.dart';
+
+class TrackNormalized {
+  final int id;
+  final String code; // 기존 'S001' 같은 코드
   final String title;
   final String artist;
   final String url;
@@ -10,12 +12,14 @@ class Track {
   final int? bpm;
   final String? fileName;
   final String? description;
-  final List<String> effectKeywords; // 호환성 유지를 위해 유지
   final bool isAsmr;
   final int displayOrder;
   final DateTime createdAt;
 
-  Track({
+  // 관계 데이터 (JOIN 결과)
+  final List<Keyword> keywords;
+
+  TrackNormalized({
     required this.id,
     required this.code,
     required this.title,
@@ -27,16 +31,16 @@ class Track {
     this.bpm,
     this.fileName,
     this.description,
-    this.effectKeywords = const [],
     this.isAsmr = false,
     required this.displayOrder,
     required this.createdAt,
+    this.keywords = const [],
   });
 
-  factory Track.fromJson(Map<String, dynamic> json) {
-    return Track(
-      id: json['id'] as int, // 정규화된 스키마: int형
-      code: json['code'] as String? ?? 'S${json['id']}', // 코드 필드 추가
+  factory TrackNormalized.fromJson(Map<String, dynamic> json) {
+    return TrackNormalized(
+      id: json['id'] as int,
+      code: json['code'] as String,
       title: json['title'] as String,
       artist: json['artist'] as String,
       url: json['url'] as String,
@@ -46,30 +50,28 @@ class Track {
       bpm: json['bpm'] as int?,
       fileName: json['file_name'] as String?,
       description: json['description'] as String?,
-      effectKeywords: _parseKeywords(json), // 정규화된 데이터 파싱
       isAsmr: json['is_asmr'] as bool? ?? false,
       displayOrder: json['display_order'] as int,
       createdAt: DateTime.parse(json['created_at'] as String),
+      // keywords는 별도로 로드
     );
   }
 
-  // 정규화된 데이터에서 키워드들을 파싱하는 헬퍼 함수
-  static List<String> _parseKeywords(Map<String, dynamic> json) {
-    // 기존 방식 (Array 타입)
-    if (json['effect_keywords'] != null) {
-      return (json['effect_keywords'] as List<dynamic>)
-          .map((e) => e.toString())
-          .toList();
-    }
-    
-    // 정규화된 방식 (관계 테이블에서 조인된 데이터)
-    if (json['keywords'] != null && json['keywords'] is List) {
-      return (json['keywords'] as List)
-          .map((keyword) => keyword['name'] as String)
-          .toList();
-    }
-    
-    return [];
+  // track_details 뷰에서 사용하는 팩토리
+  factory TrackNormalized.fromDetailView(Map<String, dynamic> json) {
+    return TrackNormalized(
+      id: json['id'] as int,
+      code: json['code'] as String,
+      title: json['title'] as String,
+      artist: json['artist'] as String,
+      url: json['url'] as String,
+      thumbnail: json['thumbnail'] as String?,
+      durationSeconds: json['duration_seconds'] as int?,
+      description: json['description'] as String?,
+      displayOrder: 0, // 뷰에서는 간소화
+      createdAt: DateTime.now(),
+      // keywords는 array로 제공됨 (처리 필요)
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -85,7 +87,6 @@ class Track {
       'bpm': bpm,
       'file_name': fileName,
       'description': description,
-      'effect_keywords': effectKeywords, // 호환성 유지
       'is_asmr': isAsmr,
       'display_order': displayOrder,
       'created_at': createdAt.toIso8601String(),
@@ -104,28 +105,57 @@ class Track {
 
   // Keyword helpers
   bool hasKeyword(String keyword) {
-    return effectKeywords.any((k) => 
-        k.toLowerCase().contains(keyword.toLowerCase()));
+    return keywords.any((k) => 
+        k.name.toLowerCase().contains(keyword.toLowerCase()));
   }
 
-  List<String> get sleepKeywords => effectKeywords
-      .where((k) => k.contains('수면') || k.contains('이완'))
+  bool hasKeywordById(int keywordId) {
+    return keywords.any((k) => k.id == keywordId);
+  }
+
+  List<String> get keywordNames => keywords.map((k) => k.name).toList();
+
+  List<Keyword> get sleepKeywords => keywords
+      .where((k) => k.name.contains('수면') || k.name.contains('이완'))
       .toList();
 
-  List<String> get energyKeywords => effectKeywords
-      .where((k) => k.contains('활력') || k.contains('기분전환'))
+  List<Keyword> get energyKeywords => keywords
+      .where((k) => k.name.contains('활력') || k.name.contains('기분전환'))
       .toList();
 
   @override
-  String toString() => 'Track(id: $id, code: $code, title: $title, duration: $formattedDuration)';
+  String toString() => 'TrackNormalized(id: $id, code: $code, title: $title, duration: $formattedDuration)';
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Track &&
+      other is TrackNormalized &&
           runtimeType == other.runtimeType &&
           id == other.id;
 
   @override
   int get hashCode => id.hashCode;
+
+  // copyWith for updating relationships
+  TrackNormalized copyWith({
+    List<Keyword>? keywords,
+  }) {
+    return TrackNormalized(
+      id: id,
+      code: code,
+      title: title,
+      artist: artist,
+      url: url,
+      thumbnail: thumbnail,
+      category: category,
+      durationSeconds: durationSeconds,
+      bpm: bpm,
+      fileName: fileName,
+      description: description,
+      isAsmr: isAsmr,
+      displayOrder: displayOrder,
+      createdAt: createdAt,
+      keywords: keywords ?? this.keywords,
+    );
+  }
 }

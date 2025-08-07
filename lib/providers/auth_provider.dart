@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthProvider extends ChangeNotifier {
   kakao.User? _user;
@@ -82,14 +83,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       debugPrint('로딩 상태 활성화됨');
 
-      // 타임아웃 설정 (30초)
-      final result = await Future.any([
-        _performKakaoLogin(),
-        Future.delayed(const Duration(seconds: 30), () {
-          debugPrint('⚠️ 카카오 로그인 타임아웃 (30초)');
-          return false;
-        }),
-      ]);
+      // 카카오 로그인 수행 (타임아웃 없음 - 사용자가 직접 취소할 때까지 대기)
+      final result = await _performKakaoLogin();
       
       debugPrint('=== 카카오 로그인 프로세스 완료 ===');
       debugPrint('최종 결과: $result');

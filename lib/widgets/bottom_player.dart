@@ -8,6 +8,45 @@ import '../constants/app_theme.dart';
 class BottomPlayer extends StatelessWidget {
   const BottomPlayer({super.key});
 
+  Widget _buildThumbnailImage(String thumbnail) {
+    if (thumbnail.startsWith('assets/')) {
+      // 로컬 asset 이미지
+      return Image.asset(
+        thumbnail,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: 48,
+          height: 48,
+          color: AppTheme.primaryColor.withOpacity(0.1),
+          child: const Icon(
+            Icons.music_note,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      );
+    } else {
+      // 네트워크 이미지
+      return CachedNetworkImage(
+        imageUrl: thumbnail,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: AppTheme.primaryColor.withOpacity(0.1),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: AppTheme.primaryColor.withOpacity(0.1),
+          child: const Icon(
+            Icons.music_note,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -40,22 +79,7 @@ class BottomPlayer extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                child: CachedNetworkImage(
-                  imageUrl: track.thumbnail,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                    child: const Icon(
-                      Icons.music_note,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ),
+                child: _buildThumbnailImage(track.thumbnail ?? ''),
               ),
               const SizedBox(width: AppTheme.spacingM),
               Expanded(

@@ -3,20 +3,47 @@ import 'package:provider/provider.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_links/app_links.dart';
+import 'config/supabase_config.dart';
+import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
 import 'providers/audio_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/font_size_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/track_repository_provider.dart';
 import 'utils/router.dart';
 import 'constants/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 카카오 SDK 초기화를 최우선으로
-  const kakaoAppKey = String.fromEnvironment('KAKAO_APP_KEY', defaultValue: '2adb87534e7bf9098b2112040ce6167d');
-  KakaoSdk.init(nativeAppKey: kakaoAppKey);
-  debugPrint('카카오 SDK 초기화 완료');
+  try {
+    // Load environment variables
+    await dotenv.load(fileName: ".env");
+    debugPrint('✅ Environment variables loaded');
+    
+    // 앱 환경 설정 초기화 (개발: Development, 릴리즈: Production)
+    final environment = dotenv.env['APP_ENV'] == 'production' 
+        ? Environment.production 
+        : Environment.development;
+    AppConfig.initialize(environment);
+    
+    // Supabase 초기화
+    await SupabaseConfig.initialize();
+    debugPrint('✅ Supabase 초기화 완료');
+    
+    // 카카오 SDK 초기화 - .env 파일에서만 로드
+    final kakaoAppKey = dotenv.env['KAKAO_APP_KEY'];
+    if (kakaoAppKey == null) {
+      debugPrint('❌ KAKAO_APP_KEY가 .env 파일에 설정되지 않았습니다');
+      return;
+    }
+    KakaoSdk.init(nativeAppKey: kakaoAppKey);
+    debugPrint('✅ 카카오 SDK 초기화 완료: ${kakaoAppKey.substring(0, 8)}...');
+    
+  } catch (e) {
+    debugPrint('❌ 초기화 오류: $e');
+  }
 
   runApp(const MyApp());
 }
@@ -58,7 +85,12 @@ class _MyAppState extends State<MyApp> {
   void _handleKakaoCallback(Uri uri) {
     debugPrint('🎯 카카오 콜백 처리: ${uri.toString()}');
     
-    const kakaoAppKey = String.fromEnvironment('KAKAO_APP_KEY', defaultValue: '2adb87534e7bf9098b2112040ce6167d');
+    final kakaoAppKey = dotenv.env['KAKAO_APP_KEY'];
+    if (kakaoAppKey == null) {
+      debugPrint('❌ KAKAO_APP_KEY가 .env 파일에 설정되지 않았습니다');
+      return;
+    }
+    
     if (uri.scheme == 'kakao$kakaoAppKey' && uri.host == 'oauth') {
       final code = uri.queryParameters['code'];
       if (code != null) {
@@ -92,6 +124,8 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => AudioProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => FontSizeProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => TrackRepositoryProvider()),
       ],
       child: Consumer<FontSizeProvider>(
         builder: (context, fontSizeProvider, child) {

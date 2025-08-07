@@ -73,15 +73,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
   
   void _startAnimation() async {
+    // mounted 체크 추가
+    if (!mounted) return;
+    
     // 1. 로고 페이드인
     _fadeController.forward();
     await Future.delayed(const Duration(milliseconds: 800));
     
+    if (!mounted) return;
+    
     // 2. 영어 글자별 등장 애니메이션
     await _textAnimationController.forward();
     
+    if (!mounted) return;
+    
     // 3. 잠시 대기
     await Future.delayed(const Duration(milliseconds: 700));
+    
+    if (!mounted) return;
     
     // 4. 한글 서브타이틀 표시
     setState(() {
@@ -90,6 +99,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     // 5. 위치 고정된 상태로 잠시 대기 후 다음 화면으로
     await Future.delayed(const Duration(milliseconds: 1500));
+    
+    if (!mounted) return;
     
     // 6. 완료 후 다음 화면으로
     _checkAuthStatus();
@@ -151,10 +162,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
   }
 
+  void _skipToLogin() {
+    if (mounted) {
+      context.go('/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: GestureDetector(
+        onTap: _skipToLogin,
+        child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
@@ -271,6 +290,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               ],
             ),
           ),
+        ),
         ),
       ),
     );
