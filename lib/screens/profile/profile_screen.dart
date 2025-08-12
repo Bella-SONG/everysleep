@@ -45,10 +45,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now().subtract(const Duration(days: 365 * 50)),
+      initialDate: _selectedDate ?? DateTime.now().subtract(const Duration(days: 365 * 30)),
       firstDate: DateTime(1940),
       lastDate: DateTime.now(),
       locale: const Locale('ko', 'KR'),
+      helpText: '생년월일을 선택해주세요',
+      cancelText: '취소',
+      confirmText: '확인',
+      fieldLabelText: '생년월일',
+      fieldHintText: 'yyyy/mm/dd',
+      errorFormatText: '올바른 날짜 형식을 입력해주세요',
+      errorInvalidText: '유효한 날짜를 입력해주세요',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: AppTheme.primaryColor,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -57,10 +75,141 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String _getGenderDisplayText(String gender) {
+    switch (gender) {
+      case 'male':
+        return '남성';
+      case 'female':
+        return '여성';
+      case 'other':
+        return '기타';
+      default:
+        return gender;
+    }
+  }
+
+  void _showGenderBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '성별을 선택해주세요',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildGenderOption('male', '남성', Icons.male),
+              _buildGenderOption('female', '여성', Icons.female),
+              _buildGenderOption('other', '기타', Icons.people),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGenderOption(String value, String label, IconData icon) {
+    final isSelected = _selectedGender == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedGender = value;
+        });
+        Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.1) : Colors.grey.shade50,
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppTheme.primaryColor : Colors.grey.shade600,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? AppTheme.primaryColor : Colors.black87,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: AppTheme.primaryColor,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveProfile() async {
-    if (_formKey.currentState!.validate() && 
-        _selectedDate != null && 
-        _selectedGender != null) {
+    // 필수 필드 유효성 검사
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('닉네임을 입력해주세요'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+    
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('생년월일을 선택해주세요'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+    
+    if (_selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('성별을 선택해주세요'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    try {
       final userProvider = context.read<UserProvider>();
       final success = await userProvider.updateUserProfile(
         nickname: _nicknameController.text.trim(),
@@ -68,14 +217,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
         gender: _selectedGender!,
       );
 
-      if (success && mounted) {
-        setState(() {
-          _isEditing = false;
-        });
+      if (mounted) {
+        if (success) {
+          // 저장 성공 시 편집모드 해제
+          setState(() {
+            _isEditing = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                '프로필이 업데이트되었습니다',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              backgroundColor: AppTheme.primaryColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.all(16),
+              elevation: 4,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // 저장 실패 시 편집모드 유지하고 오류 메시지
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('프로필 업데이트에 실패했습니다. 다시 시도해주세요.'),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('프로필이 업데이트되었습니다'),
-            backgroundColor: AppTheme.successColor,
+            content: Text('오류가 발생했습니다. 다시 시도해주세요.'),
+            backgroundColor: AppTheme.errorColor,
           ),
         );
       }
@@ -154,7 +337,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(AppTheme.spacingL),
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceColor,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -180,67 +370,245 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: AppTheme.spacingL),
-              TextFormField(
-                controller: _nicknameController,
-                enabled: _isEditing,
-                decoration: const InputDecoration(
-                  labelText: '닉네임',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '닉네임을 입력해주세요';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppTheme.spacingM),
-              InkWell(
-                onTap: _isEditing ? () => _selectDate(context) : null,
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: '생년월일',
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    enabled: _isEditing,
-                  ),
-                  child: Text(
-                    _selectedDate != null
-                        ? DateFormat('yyyy년 MM월 dd일').format(_selectedDate!)
-                        : '생년월일을 선택해주세요',
-                    style: TextStyle(
-                      color: _selectedDate != null
-                          ? AppTheme.textPrimaryColor
-                          : AppTheme.textSecondaryColor,
-                      fontSize: 16,
+              // 닉네임 입력 필드
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  border: _isEditing 
+                      ? Border.all(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          width: 1.5,
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  color: _isEditing ? Colors.white : AppTheme.cardColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      color: _isEditing 
+                          ? AppTheme.primaryColor 
+                          : Colors.grey.shade400,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '닉네임',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _isEditing 
+                                  ? AppTheme.primaryColor 
+                                  : Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          _isEditing
+                              ? TextFormField(
+                                  controller: _nicknameController,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                    hintText: '닉네임을 입력해주세요',
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return '닉네임을 입력해주세요';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              : Text(
+                                  _nicknameController.text.isNotEmpty
+                                      ? _nicknameController.text
+                                      : '닉네임을 입력해주세요',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: _nicknameController.text.isNotEmpty
+                                        ? Colors.black87
+                                        : Colors.grey.shade700,
+                                    fontWeight: _nicknameController.text.isNotEmpty 
+                                        ? FontWeight.w500 
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacingM),
+              // 생년월일 입력 필드
+              GestureDetector(
+                onTap: _isEditing ? () => _selectDate(context) : null,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    border: _isEditing 
+                        ? Border.all(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                            width: 1.5,
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    color: _isEditing ? Colors.white : AppTheme.cardColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        color: _isEditing 
+                            ? AppTheme.primaryColor 
+                            : Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '생년월일',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: _isEditing 
+                                    ? AppTheme.primaryColor 
+                                    : Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedDate != null
+                                  ? DateFormat('yyyy년 MM월 dd일').format(_selectedDate!)
+                                  : '생년월일을 선택해주세요',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: _selectedDate != null
+                                    ? Colors.black87
+                                    : Colors.grey.shade700,
+                                fontWeight: _selectedDate != null 
+                                    ? FontWeight.w500 
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_isEditing)
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: AppTheme.primaryColor,
+                          size: 24,
+                        ),
+                    ],
                   ),
                 ),
               ),
               const SizedBox(height: AppTheme.spacingM),
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                decoration: const InputDecoration(
-                  labelText: '성별',
-                  prefixIcon: Icon(Icons.people),
+              // 성별 선택 필드
+              GestureDetector(
+                onTap: _isEditing ? () => _showGenderBottomSheet() : null,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    border: _isEditing 
+                        ? Border.all(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                            width: 1.5,
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    color: _isEditing ? Colors.white : AppTheme.cardColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.people,
+                        color: _isEditing 
+                            ? AppTheme.primaryColor 
+                            : Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '성별',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: _isEditing 
+                                    ? AppTheme.primaryColor 
+                                    : Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedGender != null
+                                  ? _getGenderDisplayText(_selectedGender!)
+                                  : '성별을 선택해주세요',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: _selectedGender != null
+                                    ? Colors.black87
+                                    : Colors.grey.shade700,
+                                fontWeight: _selectedGender != null 
+                                    ? FontWeight.w500 
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_isEditing)
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: AppTheme.primaryColor,
+                          size: 24,
+                        ),
+                    ],
+                  ),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'male', child: Text('남성')),
-                  DropdownMenuItem(value: 'female', child: Text('여성')),
-                  DropdownMenuItem(value: 'other', child: Text('기타')),
-                ],
-                onChanged: _isEditing
-                    ? (value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      }
-                    : null,
-                validator: (value) {
-                  if (value == null) {
-                    return '성별을 선택해주세요';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: AppTheme.spacingL),
               _buildFontSizeSection(fontSizeProvider),
@@ -334,7 +702,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(AppTheme.spacingL),
       decoration: BoxDecoration(
         color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
