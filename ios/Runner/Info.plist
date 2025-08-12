@@ -46,6 +46,12 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
+	<!-- Background Audio Configuration -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+	
 	<!-- Kakao Login Configuration -->
 	<key>LSApplicationQueriesSchemes</key>
 	<array>

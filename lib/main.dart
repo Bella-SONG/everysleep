@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:app_links/app_links.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'config/supabase_config.dart';
 import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
@@ -15,37 +14,49 @@ import 'utils/router.dart';
 import 'constants/app_theme.dart';
 
 Future<void> main() async {
+  debugPrint('🚀 main() 함수 시작');
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    // Load environment variables
+    // 1. Load environment variables FIRST (다른 모든 초기화에 필요)
     await dotenv.load(fileName: ".env");
     debugPrint('✅ Environment variables loaded');
     
-    // 앱 환경 설정 초기화 (개발: Development, 릴리즈: Production)
+    // 2. 앱 환경 설정 초기화
     final environment = dotenv.env['APP_ENV'] == 'production' 
         ? Environment.production 
         : Environment.development;
     AppConfig.initialize(environment);
+    debugPrint('✅ App config initialized: $environment');
     
-    // Supabase 초기화
+    // 3. Supabase 초기화 (네트워크 연결 및 인증에 필요)
     await SupabaseConfig.initialize();
-    debugPrint('✅ Supabase 초기화 완료');
+    debugPrint('✅ Supabase initialized successfully');
     
-    // 카카오 SDK 초기화 - .env 파일에서만 로드
-    final kakaoAppKey = dotenv.env['KAKAO_APP_KEY'];
-    if (kakaoAppKey == null) {
-      debugPrint('❌ KAKAO_APP_KEY가 .env 파일에 설정되지 않았습니다');
-      return;
-    }
-    KakaoSdk.init(nativeAppKey: kakaoAppKey);
-    debugPrint('✅ 카카오 SDK 초기화 완료: ${kakaoAppKey.substring(0, 8)}...');
+    // 4. Just Audio Background 초기화 (오디오 서비스에 필요)
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.everysleep.everysleep.audio',
+      androidNotificationChannelName: 'EverySleep Audio',
+      androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      androidShowNotificationBadge: false,
+    );
+    debugPrint('✅ Audio background service initialized');
+    
+    // 5. 이미지 캐시 메모리 제한 설정 (메모리 최적화)
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024; // 50MB 제한
+    PaintingBinding.instance.imageCache.maximumSize = 20; // 최대 20개 이미지만 캐시
+    
+    debugPrint('✅ Supabase OAuth 사용으로 카카오 SDK 초기화 불필요');
     
   } catch (e) {
     debugPrint('❌ 초기화 오류: $e');
+    // 오류 시에도 runApp 호출
   }
 
+  debugPrint('🚀 runApp() 호출');
   runApp(const MyApp());
+  debugPrint('✅ main() 함수 완료');
 }
 
 class MyApp extends StatefulWidget {
@@ -55,73 +66,71 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  late AppLinks _appLinks;
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  AudioProvider? _audioProvider;
 
   @override
   void initState() {
     super.initState();
-    _initAppLinks();
+    debugPrint('🚀 MyApp.initState() 시작');
+    debugPrint('🚀 앱 초기화: Supabase OAuth 처리');
+    
+    // 앱 라이프사이클 관찰자 등록
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  void _initAppLinks() {
-    _appLinks = AppLinks();
-    
-    // 앱이 실행되지 않은 상태에서 링크로 시작된 경우
-    _appLinks.getInitialLink().then((uri) {
-      if (uri != null) {
-        debugPrint('🔗 초기 링크로 앱 시작: $uri');
-        _handleKakaoCallback(uri);
-      }
-    });
-    
-    // 앱이 실행 중일 때 링크를 받은 경우
-    _appLinks.uriLinkStream.listen((uri) {
-      debugPrint('🔗 실행 중 링크 수신: $uri');
-      _handleKakaoCallback(uri);
-    });
+  @override
+  void dispose() {
+    // 앱 라이프사이클 관찰자 해제
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
-  void _handleKakaoCallback(Uri uri) {
-    debugPrint('🎯 카카오 콜백 처리: ${uri.toString()}');
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
     
-    final kakaoAppKey = dotenv.env['KAKAO_APP_KEY'];
-    if (kakaoAppKey == null) {
-      debugPrint('❌ KAKAO_APP_KEY가 .env 파일에 설정되지 않았습니다');
-      return;
+    debugPrint('🔄 앱 라이프사이클 변경: $state');
+    
+    // 오직 앱이 완전히 종료될 때만 오디오 정지
+    if (state == AppLifecycleState.detached) {
+      debugPrint('🔴 앱 완전 종료 (detached) - 오디오 정지');
+      _stopAudioOnAppTermination();
     }
-    
-    if (uri.scheme == 'kakao$kakaoAppKey' && uri.host == 'oauth') {
-      final code = uri.queryParameters['code'];
-      if (code != null) {
-        debugPrint('✅ 카카오 OAuth 코드 수신: ${code.substring(0, 10)}...');
-        // AuthProvider에 OAuth 코드 전달하여 토큰 교환 및 사용자 정보 획득
-        _processOAuthCode(code);
-      } else {
-        debugPrint('❌ 카카오 OAuth 코드 없음');
-      }
+    // paused, resumed는 정상적인 백그라운드 사용이므로 음악 계속 재생
+    else if (state == AppLifecycleState.paused) {
+      debugPrint('⏸️ 앱 백그라운드로 이동 - 음악 계속 재생');
+    }
+    else if (state == AppLifecycleState.resumed) {
+      debugPrint('▶️ 앱 포그라운드로 복귀');
     }
   }
 
-  Future<void> _processOAuthCode(String code) async {
+
+  void _stopAudioOnAppTermination() {
     try {
-      debugPrint('🔄 카카오 OAuth 성공으로 메인 화면 이동');
-      
-      // 짧은 딜레이 후 메인 화면으로 이동
-      await Future.delayed(const Duration(milliseconds: 300));
-      router.go('/main');
+      debugPrint('🎵 앱 종료 - 강제 오디오 정지 실행');
+      _audioProvider?.forceStopAll();
     } catch (e) {
-      debugPrint('❌ OAuth 코드 처리 에러: $e');
-      router.go('/login');
+      debugPrint('❌ 앱 종료 시 오디오 정지 실패: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🚀 MyApp.build() 시작');
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AudioProvider()),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider()..checkAuth(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            _audioProvider = AudioProvider();
+            return _audioProvider!;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => FontSizeProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),

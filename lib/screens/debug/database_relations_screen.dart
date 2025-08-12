@@ -329,7 +329,7 @@ class _DatabaseRelationsScreenState extends State<DatabaseRelationsScreen> {
                     ),
                   )).toList(),
                 ),
-              )).toList(),
+              )),
             ],
           ),
         ),

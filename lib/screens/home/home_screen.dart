@@ -11,7 +11,6 @@ import '../../models/theme.dart' as app_theme;
 import '../../models/mood.dart';
 import '../../models/track.dart';
 import '../main_navigation.dart';
-import '../../providers/track_repository_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<app_theme.Theme> _recommendedThemes = [];
   final SupabaseService _supabaseService = SupabaseService();
   bool _isLoadingMoods = true;
-  
+
   // 기분별 색상 매핑
   final Map<String, Color> moodColorMap = {
     '기운이 없어요': const Color(0xFF50C878),
@@ -257,17 +256,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: AppTheme.textSecondaryColor,
-                    size: 24,
-                  ),
                 ],
               ),
-              const SizedBox(height: AppTheme.spacingXL),
-
-              // 건강팁 배너 (API 연동 예정)
-              _buildHealthTipBanner(),
               const SizedBox(height: AppTheme.spacingXL),
 
               // 감정 선택 섹션
@@ -334,6 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: AppTheme.spacingXL),
                 _buildSelectedMoodTracks(),
               ],
+              
+              // 건강팁 배너 (API 연동 예정) - 제일 하단으로 이동
+              const SizedBox(height: AppTheme.spacingXL),
+              _buildHealthTipBanner(),
             ],
           ),
         ),
@@ -520,8 +514,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: double.infinity,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: _getThemeBackgroundImage(theme).startsWith('assets/')
-                            ? AssetImage(_getThemeBackgroundImage(theme)) as ImageProvider
+                        image:
+                            _getThemeBackgroundImage(
+                              theme,
+                            ).startsWith('assets/')
+                            ? AssetImage(_getThemeBackgroundImage(theme))
+                                  as ImageProvider
                             : NetworkImage(_getThemeBackgroundImage(theme)),
                         fit: BoxFit.cover,
                       ),
@@ -632,8 +630,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: double.infinity,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: _getThemeBackgroundImage(theme).startsWith('assets/')
-                            ? AssetImage(_getThemeBackgroundImage(theme)) as ImageProvider
+                        image:
+                            _getThemeBackgroundImage(
+                              theme,
+                            ).startsWith('assets/')
+                            ? AssetImage(_getThemeBackgroundImage(theme))
+                                  as ImageProvider
                             : NetworkImage(_getThemeBackgroundImage(theme)),
                         fit: BoxFit.cover,
                       ),
@@ -720,7 +722,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // 테마별 배경 이미지 매핑 - 사람 없는 자연 이미지들, 각각 다른 이미지
   String _getThemeBackgroundImage(theme) {
     final themeTitle = theme.title?.toLowerCase() ?? '';
-    
+
     // 구체적인 테마명으로 매핑
     if (themeTitle.contains('일상의 낭만')) {
       return 'assets/images/after.jpg'; // 일상의 낭만 - 따뜻한 거실 분위기
@@ -736,15 +738,25 @@ class _HomeScreenState extends State<HomeScreen> {
       return 'assets/images/h1.jpg'; // 마음 테라피 - 치유와 평안한 이미지
     } else if (themeTitle.contains('마음을 다독이며') || themeTitle.contains('다독')) {
       return 'assets/images/giulia-bertelli-dvXGnwnYweM-unsplash.jpg'; // 마음을 다독이며 - 따뜻하고 위로하는 이미지
-    } else if (themeTitle.contains('수면') || themeTitle.contains('잠') || themeTitle.contains('꿈')) {
+    } else if (themeTitle.contains('수면') ||
+        themeTitle.contains('잠') ||
+        themeTitle.contains('꿈')) {
       return 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop'; // 구름 가득한 하늘
-    } else if (themeTitle.contains('명상') || themeTitle.contains('평화') || themeTitle.contains('안정')) {
+    } else if (themeTitle.contains('명상') ||
+        themeTitle.contains('평화') ||
+        themeTitle.contains('안정')) {
       return 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&h=300&fit=crop'; // 나무 그늘
-    } else if (themeTitle.contains('활력') || themeTitle.contains('기분') || themeTitle.contains('햇살')) {
+    } else if (themeTitle.contains('활력') ||
+        themeTitle.contains('기분') ||
+        themeTitle.contains('햇살')) {
       return 'https://images.unsplash.com/photo-1441905436292-43cd83e8b5a4?w=400&h=300&fit=crop'; // 들판의 꽃
-    } else if (themeTitle.contains('자연') || themeTitle.contains('숲') || themeTitle.contains('바람')) {
+    } else if (themeTitle.contains('자연') ||
+        themeTitle.contains('숲') ||
+        themeTitle.contains('바람')) {
       return 'https://images.unsplash.com/photo-1428592953211-077101b2021b?w=400&h=300&fit=crop'; // 빗방울과 자연
-    } else if (themeTitle.contains('재즈') || themeTitle.contains('카페') || themeTitle.contains('휴식')) {
+    } else if (themeTitle.contains('재즈') ||
+        themeTitle.contains('카페') ||
+        themeTitle.contains('휴식')) {
       return 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=400&h=300&fit=crop'; // 벚꽃 나무
     } else {
       // 기본 자연 이미지들을 ID에 따라 순환 사용 - 모두 다른 이미지
@@ -767,16 +779,26 @@ class _HomeScreenState extends State<HomeScreen> {
     // 테마 제목이나 ID에 따라 다른 색상 반환
     final themeTitle = theme.title?.toLowerCase() ?? '';
     final themeId = theme.id ?? 0;
-    
-    if (themeTitle.contains('수면') || themeTitle.contains('잠') || themeTitle.contains('꿈')) {
+
+    if (themeTitle.contains('수면') ||
+        themeTitle.contains('잠') ||
+        themeTitle.contains('꿈')) {
       return const Color(0xFF6B7A8A); // 차분한 청회색 - 수면 테마
-    } else if (themeTitle.contains('명상') || themeTitle.contains('평화') || themeTitle.contains('안정')) {
+    } else if (themeTitle.contains('명상') ||
+        themeTitle.contains('평화') ||
+        themeTitle.contains('안정')) {
       return const Color(0xFF7A8A7A); // 연한 올리브 그린 - 명상 테마
-    } else if (themeTitle.contains('활력') || themeTitle.contains('기분') || themeTitle.contains('햇살')) {
+    } else if (themeTitle.contains('활력') ||
+        themeTitle.contains('기분') ||
+        themeTitle.contains('햇살')) {
       return const Color(0xFF8A7A6B); // 따뜻한 베이지 브라운 - 활력 테마
-    } else if (themeTitle.contains('자연') || themeTitle.contains('숲') || themeTitle.contains('바람')) {
+    } else if (themeTitle.contains('자연') ||
+        themeTitle.contains('숲') ||
+        themeTitle.contains('바람')) {
       return const Color(0xFF6B8A7A); // 자연스러운 그린 - 자연 테마
-    } else if (themeTitle.contains('재즈') || themeTitle.contains('카페') || themeTitle.contains('휴식')) {
+    } else if (themeTitle.contains('재즈') ||
+        themeTitle.contains('카페') ||
+        themeTitle.contains('휴식')) {
       return const Color(0xFF8A6B7A); // 차분한 와인 색 - 재즈/카페 테마
     } else {
       // ID를 기반으로 색상 선택 (일관성 유지)
@@ -907,7 +929,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: FutureBuilder<List<Track>>(
                       future: _supabaseService.getTracksByTheme(theme),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -922,7 +945,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     '트랙을 불러오는 중...',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -930,8 +955,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         }
-                        
-                        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+
+                        if (snapshot.hasError ||
+                            !snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -948,7 +975,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     '트랙이 없습니다',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -956,117 +985,113 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         }
-                        
+
                         final themeTracks = snapshot.data!;
                         return ListView.builder(
-                            shrinkWrap: true,
-                            padding: const EdgeInsets.all(20),
-                            itemCount: themeTracks.length,
-                            itemBuilder: (context, index) {
-                              final track = themeTracks[index];
-                              return InkWell(
-                                onTap: () async {
-                                  // 플레이 로그 기록
-                                  try {
-                                    await _supabaseService.logUserPlay(
-                                      trackId: track.id,
-                                      themeId: theme.id,
-                                    );
-                                  } catch (e) {
-                                    debugPrint('플레이 로그 기록 실패: $e');
-                                  }
-
-                                  if (!context.mounted) return;
-                                  Navigator.of(context).pop(); // 모달 닫기
-                                  // 플레이어 화면으로 이동 (track, theme, playlist 정보 전달)
-                                  context.push(
-                                    '/player',
-                                    extra: {
-                                      'track': track,
-                                      'theme': theme,
-                                      'playlist': themeTracks,
-                                      'currentIndex': index,
-                                    },
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.all(20),
+                          itemCount: themeTracks.length,
+                          itemBuilder: (context, index) {
+                            final track = themeTracks[index];
+                            return InkWell(
+                              onTap: () async {
+                                // 플레이 로그 기록
+                                try {
+                                  await _supabaseService.logUserPlay(
+                                    trackId: track.id,
+                                    themeId: theme.id,
                                   );
-                                },
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${index + 1}',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              track.title,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              track.artist,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.white.withValues(
-                                                  alpha: 0.8,
-                                                ),
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.play_circle_outline,
-                                        color: Colors.white,
-                                        size: 32,
-                                      ),
-                                    ],
+                                } catch (e) {
+                                  debugPrint('플레이 로그 기록 실패: $e');
+                                }
+
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop(); // 모달 닫기
+                                // 플레이어 화면으로 이동 (track, theme, playlist 정보 전달)
+                                context.push(
+                                  '/player',
+                                  extra: {
+                                    'track': track,
+                                    'theme': theme,
+                                    'playlist': themeTracks,
+                                    'currentIndex': index,
+                                  },
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.2),
                                   ),
                                 ),
-                              );
-                            },
-                          );
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            track.title,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            track.artist,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white.withValues(
+                                                alpha: 0.8,
+                                              ),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.play_circle_outline,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
                       },
                     ),
                   ),
@@ -1148,7 +1173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 final track = selectedTracks[index];
                 return TrackTile(
                   track: track,
-                  onTap: () => _playTrackFromMoodSelection(track, selectedTracks, index),
+                  onTap: () =>
+                      _playTrackFromMoodSelection(track, selectedTracks, index),
                 );
               },
             ),
@@ -1178,16 +1204,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return selectedTracks;
   }
 
-
-  void _playTrackFromMoodSelection(Track track, List<Track> playlist, int currentIndex) async {
+  void _playTrackFromMoodSelection(
+    Track track,
+    List<Track> playlist,
+    int currentIndex,
+  ) async {
     try {
       // 플레이어 화면으로 이동
       if (mounted) {
-        context.push('/player', extra: {
-          'track': track,
-          'playlist': playlist,
-          'currentIndex': currentIndex,
-        });
+        context.push(
+          '/player',
+          extra: {
+            'track': track,
+            'playlist': playlist,
+            'currentIndex': currentIndex,
+          },
+        );
       }
     } catch (e) {
       if (mounted) {

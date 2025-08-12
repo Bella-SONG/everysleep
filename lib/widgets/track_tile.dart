@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/track.dart';
 import '../constants/app_theme.dart';
+import '../config/supabase_config.dart';
 
 class TrackTile extends StatelessWidget {
   final Track track;
@@ -24,16 +25,28 @@ class TrackTile extends StatelessWidget {
   });
 
   Widget _buildTrackImage() {
-    final thumbnail = track.thumbnail ?? '';
-    
-    if (thumbnail.startsWith('assets/')) {
-      // 로컬 asset 이미지
-      return Image.asset(
-        thumbnail,
+    // Supabase Storage에서 썸네일 이미지 가져오기 (곡 파일명 기반)
+    if (track.fileName != null) {
+      final filenameWithoutExt = track.fileName!.split('.').first.toLowerCase();
+      final imagePath = '$filenameWithoutExt.jpg';
+      final imageUrl = SupabaseConfig.getThumbnailUrl(imagePath);
+      
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         width: 60,
         height: 60,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
+        memCacheWidth: 120, // 메모리 캐시 크기 제한 (실제 크기의 2배)
+        memCacheHeight: 120,
+        placeholder: (context, url) => Container(
+          width: 60,
+          height: 60,
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
           width: 60,
           height: 60,
           color: AppTheme.primaryColor.withValues(alpha: 0.1),
@@ -43,28 +56,18 @@ class TrackTile extends StatelessWidget {
           ),
         ),
       );
-    } else {
-      // 네트워크 이미지
-      return CachedNetworkImage(
-        imageUrl: thumbnail,
-        width: 60,
-        height: 60,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-          child: Icon(
-            track.isAsmr ? Icons.headphones : Icons.music_note,
-            color: AppTheme.primaryColor,
-          ),
-        ),
-      );
     }
+    
+    // 기본 이미지
+    return Container(
+      width: 60,
+      height: 60,
+      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+      child: Icon(
+        track.isAsmr ? Icons.headphones : Icons.music_note,
+        color: AppTheme.primaryColor,
+      ),
+    );
   }
 
   @override

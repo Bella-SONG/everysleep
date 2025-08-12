@@ -297,7 +297,7 @@ class _RecommendedMusicScreenState extends State<RecommendedMusicScreen> {
             _buildStatItem('평균 ${avgBpm.round()}BPM', Icons.favorite),
           if (totalDuration > 0)
             _buildStatItem(
-              hours > 0 ? '${hours}시간 ${minutes}분' : '${minutes}분',
+              hours > 0 ? '$hours시간 $minutes분' : '$minutes분',
               Icons.schedule,
             ),
         ],

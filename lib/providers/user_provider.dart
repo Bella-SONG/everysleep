@@ -80,8 +80,24 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  void clearUserProfile() {
-    _userProfile = null;
-    notifyListeners();
+  Future<void> clearUserProfile() async {
+    try {
+      // SharedPreferences에서 사용자 데이터 완전 삭제
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('kakao_user_id');
+      await prefs.remove('user_nickname');
+      await prefs.remove('user_birth_date');
+      await prefs.remove('user_gender');
+      
+      debugPrint('🗑️ 사용자 프로필 데이터 완전 삭제');
+      
+      _userProfile = null;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ 사용자 프로필 삭제 실패: $e');
+      // 오류가 발생해도 메모리에서는 삭제
+      _userProfile = null;
+      notifyListeners();
+    }
   }
 }

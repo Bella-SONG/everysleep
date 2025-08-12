@@ -123,11 +123,11 @@ class SleepTimerDialog extends StatelessWidget {
     final seconds = remaining.inSeconds % 60;
     
     if (hours > 0) {
-      return '${hours}시간 ${minutes}분 남음';
+      return '$hours시간 $minutes분 남음';
     } else if (minutes > 0) {
-      return '${minutes}분 ${seconds}초 남음';
+      return '$minutes분 $seconds초 남음';
     } else {
-      return '${seconds}초 남음';
+      return '$seconds초 남음';
     }
   }
 }

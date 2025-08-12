@@ -4,19 +4,34 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/audio_provider.dart';
 import '../constants/app_theme.dart';
+import '../config/supabase_config.dart';
 
 class BottomPlayer extends StatelessWidget {
   const BottomPlayer({super.key});
 
-  Widget _buildThumbnailImage(String thumbnail) {
-    if (thumbnail.startsWith('assets/')) {
-      // 로컬 asset 이미지
-      return Image.asset(
-        thumbnail,
+  Widget _buildThumbnailImage(dynamic track) {
+    // Supabase Storage에서 썸네일 이미지 가져오기 (곡 파일명 기반)
+    if (track.fileName != null) {
+      final filenameWithoutExt = track.fileName!.split('.').first.toLowerCase();
+      final imagePath = '$filenameWithoutExt.jpg';
+      final imageUrl = SupabaseConfig.getThumbnailUrl(imagePath);
+      
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         width: 48,
         height: 48,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
+        memCacheWidth: 96, // 메모리 캐시 크기 제한
+        memCacheHeight: 96,
+        placeholder: (context, url) => Container(
+          width: 48,
+          height: 48,
+          color: AppTheme.primaryColor.withOpacity(0.1),
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
           width: 48,
           height: 48,
           color: AppTheme.primaryColor.withOpacity(0.1),
@@ -26,25 +41,18 @@ class BottomPlayer extends StatelessWidget {
           ),
         ),
       );
-    } else {
-      // 네트워크 이미지
-      return CachedNetworkImage(
-        imageUrl: thumbnail,
-        width: 48,
-        height: 48,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: AppTheme.primaryColor.withOpacity(0.1),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: AppTheme.primaryColor.withOpacity(0.1),
-          child: const Icon(
-            Icons.music_note,
-            color: AppTheme.primaryColor,
-          ),
-        ),
-      );
     }
+    
+    // 기본 이미지
+    return Container(
+      width: 48,
+      height: 48,
+      color: AppTheme.primaryColor.withOpacity(0.1),
+      child: const Icon(
+        Icons.music_note,
+        color: AppTheme.primaryColor,
+      ),
+    );
   }
 
   @override
@@ -79,7 +87,7 @@ class BottomPlayer extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                child: _buildThumbnailImage(track.thumbnail ?? ''),
+                child: _buildThumbnailImage(track),
               ),
               const SizedBox(width: AppTheme.spacingM),
               Expanded(

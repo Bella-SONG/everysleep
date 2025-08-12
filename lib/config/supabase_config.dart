@@ -23,7 +23,7 @@ class SupabaseConfig {
       debug: kDebugMode,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.implicit,
-        autoRefreshToken: false,
+        autoRefreshToken: true,
       ),
     );
     
@@ -49,4 +49,18 @@ class SupabaseConfig {
   static SupabaseStorageClient get storage => _client.storage;
   static StorageFileApi get audioStorage => 
       storage.from('audio-tracks');
+  static StorageFileApi get imageStorage => 
+      storage.from('everysleeptrack');
+  
+  // 이미지 URL 헬퍼
+  static String getImageUrl(String imagePath) {
+    final url = _client.storage.from('everysleeptrack').getPublicUrl('images/$imagePath');
+    // 이미지 최적화를 위한 쿼리 파라미터 추가
+    return '$url?width=300&quality=80';
+  }
+  
+  // 썸네일 이미지 URL 헬퍼 (작은 이미지)
+  static String getThumbnailUrl(String imagePath) {
+    return _client.storage.from('everysleeptrack').getPublicUrl('thumbnails/$imagePath');
+  }
 }

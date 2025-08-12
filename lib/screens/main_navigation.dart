@@ -34,11 +34,25 @@ class MainNavigationState extends State<MainNavigation> {
     final audioProvider = context.watch<AudioProvider>();
     final hasCurrentTrack = audioProvider.currentTrack != null;
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
+    return PopScope(
+      canPop: _selectedIndex == 0,  // 홈 탭에서는 바로 종료 가능
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) {
+          return;
+        }
+        
+        // 홈 탭이 아닌 경우 홈 탭으로 이동
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _screens,
+        ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -105,6 +119,7 @@ class MainNavigationState extends State<MainNavigation> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

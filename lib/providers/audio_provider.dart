@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 import '../models/track.dart';
 import '../models/nature_sound.dart';
+import '../models/track_feedback.dart';
 
 class AudioProvider extends ChangeNotifier {
   final AudioPlayer _musicPlayer = AudioPlayer();
-  final AudioPlayer _naturePlayer = AudioPlayer();
+  final ap.AudioPlayer _naturePlayer = ap.AudioPlayer(); // audioplayers 사용
   
   Track? _currentTrack;
   List<Track> _playlist = [];
@@ -21,6 +25,9 @@ class AudioProvider extends ChangeNotifier {
   DateTime? _sleepTimerEndTime;
   NatureSound? _currentNatureSound;
   bool _isNaturePlaying = false;
+  
+  // 피드백 관련
+  Function(Track)? _onTrackCompleted;
 
   Track? get currentTrack => _currentTrack;
   List<Track> get playlist => _playlist;
@@ -37,28 +44,45 @@ class AudioProvider extends ChangeNotifier {
   NatureSound? get currentNatureSound => _currentNatureSound;
   bool get isNaturePlaying => _isNaturePlaying;
 
+  // StreamSubscription 저장용
+  final List<StreamSubscription> _subscriptions = [];
+
   AudioProvider() {
     _init();
   }
 
   void _init() {
-    _musicPlayer.positionStream.listen((position) {
+    _subscriptions.add(_musicPlayer.positionStream.listen((position) {
       _position = position;
       notifyListeners();
-    });
+    }));
 
-    _musicPlayer.durationStream.listen((duration) {
+    _subscriptions.add(_musicPlayer.durationStream.listen((duration) {
       _duration = duration ?? Duration.zero;
       notifyListeners();
-    });
+    }));
 
-    _musicPlayer.playerStateStream.listen((state) {
+    _subscriptions.add(_musicPlayer.playerStateStream.listen((state) {
       _isPlaying = state.playing;
       notifyListeners();
-    });
+    }));
 
-    _musicPlayer.processingStateStream.listen((state) {
+    _subscriptions.add(_musicPlayer.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
+        // 완료된 트랙 정보를 미리 저장 (skipToNext 호출 전에)
+        final completedTrack = _currentTrack;
+        
+        // 트랙 완료 시 피드백 트리거 (수면 시간대가 아닌 경우에만)
+        final now = DateTime.now();
+        final isNightTime = now.hour >= 22 || now.hour <= 6;
+        
+        if (completedTrack != null && !isNightTime && _onTrackCompleted != null) {
+          // 2초 후 피드백 다이얼로그 표시 (완료된 트랙 정보 사용)
+          Future.delayed(const Duration(seconds: 2), () {
+            _onTrackCompleted!(completedTrack);
+          });
+        }
+        
         if (_isRepeatOne) {
           _musicPlayer.seek(Duration.zero);
           _musicPlayer.play();
@@ -66,32 +90,39 @@ class AudioProvider extends ChangeNotifier {
           skipToNext();
         }
       }
-    });
+    }));
 
-    _naturePlayer.playerStateStream.listen((state) {
-      _isNaturePlaying = state.playing;
+    // 자연음 플레이어 상태 스트림을 구독 리스트에 추가
+    _subscriptions.add(_naturePlayer.onPlayerStateChanged.listen((state) {
+      _isNaturePlaying = (state == ap.PlayerState.playing);
+      print('자연음 플레이어 상태 변경: ${state == ap.PlayerState.playing}');
       notifyListeners();
-    });
+    }));
 
     // 자연음 플레이어 기본 설정
     _naturePlayer.setVolume(_natureVolume);
-    _naturePlayer.setLoopMode(LoopMode.all);
+    _naturePlayer.setReleaseMode(ap.ReleaseMode.loop);
   }
 
   Future<void> loadTrack(Track track) async {
     _currentTrack = track;
+    
+    // 미디어 알림을 위한 태그 설정
+    final mediaItem = MediaItem(
+      id: track.id.toString(),
+      album: track.category,
+      title: track.title,
+      artist: track.artist ?? 'EverySleep',
+      artUri: track.thumbnail != null ? Uri.parse(track.thumbnail!) : null,
+    );
+    
     await _musicPlayer.setAudioSource(
       AudioSource.uri(
         Uri.parse(track.url),
-        tag: MediaItem(
-          id: track.id.toString(),
-          album: track.category,
-          title: track.title,
-          artist: track.artist,
-          artUri: track.thumbnail != null ? Uri.parse(track.thumbnail!) : null,
-        ),
+        tag: mediaItem,
       ),
     );
+    
     notifyListeners();
   }
 
@@ -106,7 +137,7 @@ class AudioProvider extends ChangeNotifier {
   Future<void> play() async {
     await _musicPlayer.play();
     if (_currentNatureSound != null && !_isNaturePlaying) {
-      await _naturePlayer.play();
+      await _naturePlayer.resume();
     }
   }
 
@@ -162,23 +193,29 @@ class AudioProvider extends ChangeNotifier {
   }
 
   Future<void> loadNatureSound(NatureSound? sound) async {
-    if (sound == null) {
-      await _naturePlayer.stop();
+    try {
+      if (sound == null) {
+        await _naturePlayer.stop();
+        _currentNatureSound = null;
+        _isNaturePlaying = false;
+        notifyListeners();
+        return;
+      }
+
+      print('자연음 로드 시작: ${sound.name}, URL: ${sound.url}');
+      _currentNatureSound = sound;
+      
+      print('자연음 소스 설정 완료, 재생 시작');
+      // audioplayers는 URL을 바로 재생
+      await _naturePlayer.play(ap.UrlSource(sound.url));
+      print('자연음 재생 명령 완료');
+      notifyListeners();
+    } catch (e) {
+      print('자연음 로드 오류: $e');
       _currentNatureSound = null;
       _isNaturePlaying = false;
       notifyListeners();
-      return;
     }
-
-    _currentNatureSound = sound;
-    await _naturePlayer.setAudioSource(
-      AudioSource.uri(Uri.parse(sound.url)),
-    );
-    
-    if (_isPlaying) {
-      await _naturePlayer.play();
-    }
-    notifyListeners();
   }
 
   Future<void> toggleNatureSound() async {
@@ -187,7 +224,7 @@ class AudioProvider extends ChangeNotifier {
     if (_isNaturePlaying) {
       await _naturePlayer.pause();
     } else {
-      await _naturePlayer.play();
+      await _naturePlayer.resume();
     }
   }
 
@@ -214,10 +251,66 @@ class AudioProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 피드백 콜백 설정
+  void setTrackCompletedCallback(Function(Track)? callback) {
+    _onTrackCompleted = callback;
+  }
+
   @override
   void dispose() {
-    _musicPlayer.dispose();
-    _naturePlayer.dispose();
+    debugPrint('🔴 AudioProvider dispose 시작 - 모든 오디오 정지');
+    
+    try {
+      // 1. Stream 구독 해제 (메모리 누수 방지)
+      for (final subscription in _subscriptions) {
+        subscription.cancel();
+      }
+      _subscriptions.clear();
+      
+      // 2. 타이머 취소
+      _sleepTimerDuration = null;
+      _sleepTimerEndTime = null;
+      
+      // 3. 재생 중인 모든 오디오 즉시 정지 (비동기 처리)
+      _stopAllAudioSync();
+      
+      debugPrint('✅ AudioProvider dispose 완료');
+    } catch (e) {
+      debugPrint('❌ AudioProvider dispose 실패: $e');
+    }
+    
     super.dispose();
+  }
+
+  void _stopAllAudioSync() {
+    // 동기적으로 정지 처리
+    _musicPlayer.stop().catchError((e) => debugPrint('음악 정지 실패: $e'));
+    _naturePlayer.stop().catchError((e) => debugPrint('자연음 정지 실패: $e'));
+    
+    // 리소스 해제
+    _musicPlayer.dispose().catchError((e) => debugPrint('음악 플레이어 해제 실패: $e'));
+    _naturePlayer.dispose().catchError((e) => debugPrint('자연음 플레이어 해제 실패: $e'));
+  }
+
+  // 앱 종료 시 호출할 강제 정지 메서드
+  Future<void> forceStopAll() async {
+    try {
+      debugPrint('🔴 모든 오디오 강제 정지');
+      
+      // 재생 중인 모든 오디오 즉시 정지
+      await _musicPlayer.stop();
+      await _naturePlayer.stop();
+      
+      // 상태 초기화
+      _isPlaying = false;
+      _isNaturePlaying = false;
+      _currentTrack = null;
+      _currentNatureSound = null;
+      
+      notifyListeners();
+      debugPrint('✅ 모든 오디오 강제 정지 완료');
+    } catch (e) {
+      debugPrint('❌ 강제 정지 실패: $e');
+    }
   }
 }

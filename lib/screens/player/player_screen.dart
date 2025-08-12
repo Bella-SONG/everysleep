@@ -3,9 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/audio_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../constants/app_theme.dart';
 import '../../widgets/sleep_timer_dialog.dart';
 import '../../widgets/nature_sound_selector.dart';
+import '../../widgets/track_feedback_dialog.dart';
+import '../../services/feedback_service.dart';
+import '../../config/app_config.dart';
+import '../../config/supabase_config.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key});
@@ -15,10 +20,88 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
+  bool? _hasGivenFeedback; // null: 아직 안함, true: 좋아요, false: 싫어요
+  
   @override
   void initState() {
     super.initState();
     _loadTrackFromRoute();
+    _setupFeedbackCallback();
+    _testDatabaseConnection();
+  }
+
+  void _testDatabaseConnection() async {
+    final isConnected = await FeedbackService.testDatabaseConnection();
+    print('📊 데이터베이스 연결 상태: ${isConnected ? '성공' : '실패'}');
+  }
+
+  void _setupFeedbackCallback() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final audioProvider = context.read<AudioProvider>();
+      audioProvider.setTrackCompletedCallback((track) {
+        _showFeedbackDialog(track);
+      });
+    });
+  }
+
+  void _showFeedbackDialog(dynamic track) {
+    if (!mounted) return;
+    
+    // 이미 빠른 피드백을 줬으면 상세 다이얼로그 생략
+    if (_hasGivenFeedback != null) {
+      return;
+    }
+    
+    _showFeedbackDialogWithInitialValue(track, null);
+  }
+
+  void _showFeedbackDialogWithInitialValue(dynamic track, bool? initialIsPositive) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => TrackFeedbackDialog(
+        track: track,
+        initialIsPositive: initialIsPositive,
+        onSubmitFeedback: (feedback) async {
+          // 피드백을 서버에 저장
+          final success = await FeedbackService.submitFeedback(feedback);
+          if (mounted) {
+            // 피드백 완료 후 즉시 상태 리셋
+            setState(() {
+              _hasGivenFeedback = null;
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(success 
+                    ? '피드백이 저장되었습니다'
+                    : '피드백 저장에 실패했습니다'),
+                backgroundColor: success 
+                    ? AppTheme.successColor 
+                    : AppTheme.errorColor,
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  void _quickFeedback(bool isPositive) {
+    final audioProvider = context.read<AudioProvider>();
+    final track = audioProvider.currentTrack;
+    
+    if (track == null) {
+      print('❌ 빠른 피드백 실패: 현재 트랙이 없음');
+      return;
+    }
+    
+    print('🎵 빠른 피드백 시작: ${track.title} (${isPositive ? '👍' : '👎'})');
+    
+    // 피드백 모달 띄우기 (초기값 설정)
+    _showFeedbackDialogWithInitialValue(track, isPositive);
   }
 
   void _loadTrackFromRoute() {
@@ -30,8 +113,23 @@ class _PlayerScreenState extends State<PlayerScreen> {
         final track = extra['track'];
         final playlist = extra['playlist'] as List?;
         final currentIndex = extra['currentIndex'] as int?;
+        final theme = extra['theme'];  // 테마 정보 받기
+        
+        // 테마 정보가 있으면 ThemeProvider에 설정
+        if (theme != null) {
+          final themeProvider = context.read<ThemeProvider>();
+          // selectedTheme이 null이거나 다른 테마일 때만 설정
+          if (themeProvider.selectedTheme?.id != theme.id) {
+            themeProvider.selectTheme(theme);
+          }
+        }
         
         if (track != null) {
+          // 새 트랙 로드시 피드백 상태 리셋
+          setState(() {
+            _hasGivenFeedback = null;
+          });
+          
           final audioProvider = context.read<AudioProvider>();
           if (playlist != null && playlist.isNotEmpty) {
             // currentIndex가 있으면 해당 인덱스부터 시작, 없으면 0부터
@@ -68,9 +166,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: track.thumbnail?.startsWith('assets/') == true
-                ? AssetImage(track.thumbnail!) as ImageProvider
-                : CachedNetworkImageProvider(track.thumbnail ?? ''),
+            image: _getTrackImageProvider(track),
             fit: BoxFit.cover,
           ),
         ),
@@ -117,6 +213,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         const SizedBox(height: AppTheme.spacingXL),
                         _buildControls(context, audioProvider),
                         const SizedBox(height: AppTheme.spacingXL),
+                        if (AppConfig.showQuickFeedback) _buildQuickFeedback(context),
+                        if (AppConfig.showQuickFeedback) const SizedBox(height: AppTheme.spacingXL),
                         _buildVolumeControls(context, audioProvider),
                         const SizedBox(height: 120), // 자연음 선택기를 위한 여백
                       ],
@@ -347,9 +445,135 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
+  Widget _buildQuickFeedback(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingXL),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 좋아요 버튼
+          Expanded(
+            child: Material(
+              color: _hasGivenFeedback == true
+                  ? Colors.green.withValues(alpha: 0.2)
+                  : Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () => _quickFeedback(true),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _hasGivenFeedback == true
+                          ? Colors.green
+                          : Colors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.thumb_up,
+                        color: _hasGivenFeedback == true
+                            ? Colors.green
+                            : Colors.white.withValues(alpha: 0.8),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '좋아요',
+                        style: TextStyle(
+                          color: _hasGivenFeedback == true
+                              ? Colors.green
+                              : Colors.white.withValues(alpha: 0.8),
+                          fontSize: 16,
+                          fontWeight: _hasGivenFeedback == true
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // 싫어요 버튼
+          Expanded(
+            child: Material(
+              color: _hasGivenFeedback == false
+                  ? Colors.red.withValues(alpha: 0.2)
+                  : Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () => _quickFeedback(false),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _hasGivenFeedback == false
+                          ? Colors.red
+                          : Colors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.thumb_down,
+                        color: _hasGivenFeedback == false
+                            ? Colors.red
+                            : Colors.white.withValues(alpha: 0.8),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '별로예요',
+                        style: TextStyle(
+                          color: _hasGivenFeedback == false
+                              ? Colors.red
+                              : Colors.white.withValues(alpha: 0.8),
+                          fontSize: 16,
+                          fontWeight: _hasGivenFeedback == false
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  ImageProvider _getTrackImageProvider(dynamic track) {
+    // Supabase Storage에서 이미지 가져오기 (곡 파일명 기반)
+    if (track.fileName != null) {
+      // 파일명에서 확장자 제거하고 소문자로 변환 후 .jpg로 매핑
+      final filenameWithoutExt = track.fileName.split('.').first.toLowerCase();
+      final imagePath = '$filenameWithoutExt.jpg';
+      final imageUrl = SupabaseConfig.getImageUrl(imagePath);
+      return CachedNetworkImageProvider(imageUrl);
+    }
+    
+    // 기본 이미지
+    return const AssetImage('assets/images/sleep1.png');
   }
 }

@@ -6,8 +6,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/font_size_provider.dart';
 import '../../constants/app_theme.dart';
-import '../../config/app_config.dart';
-import '../debug/database_relations_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -98,10 +96,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await context.read<AuthProvider>().signOut();
-              context.read<UserProvider>().clearUserProfile();
+              
+              // BuildContext를 미리 저장
+              final authProvider = context.read<AuthProvider>();
+              final userProvider = context.read<UserProvider>();
+              final router = GoRouter.of(context);
+              
+              // 로그아웃 처리
+              await authProvider.signOut();
+              await userProvider.clearUserProfile();
+              
               if (mounted) {
-                context.go('/login');
+                router.go('/login');
               }
             },
             style: TextButton.styleFrom(
@@ -167,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: AppTheme.spacingM),
                     Text(
-                      authProvider.user?.kakaoAccount?.profile?.nickname ?? '사용자',
+                      authProvider.user?.userMetadata?['name'] ?? authProvider.user?.email?.split('@')[0] ?? '사용자',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -193,6 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: _isEditing ? () => _selectDate(context) : null,
                 child: InputDecorator(
                   decoration: InputDecoration(
+                    labelText: '생년월일',
                     prefixIcon: const Icon(Icons.calendar_today),
                     enabled: _isEditing,
                   ),
@@ -307,13 +314,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
               const SizedBox(height: AppTheme.spacingXL * 2),
-              
-              // 개발자 옵션 (개발 환경에서만 표시)
-              if (!AppConfig.isProduction) ...[
-                _buildDeveloperSection(),
-                const SizedBox(height: AppTheme.spacingL),
-              ],
-              
               TextButton.icon(
                 onPressed: _handleLogout,
                 icon: const Icon(Icons.logout),
@@ -390,64 +390,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeveloperSection() {
-    return Container(
-      padding: const EdgeInsets.all(AppTheme.spacingL),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: Colors.orange.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.developer_mode,
-                color: Colors.orange.shade700,
-                size: 20,
-              ),
-              const SizedBox(width: AppTheme.spacingS),
-              Text(
-                '개발자 옵션',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.orange.shade700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppTheme.spacingM),
-          Text(
-            '데이터베이스 관계 구조와 앱 내부 동작을 확인할 수 있습니다.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.orange.shade600,
-            ),
-          ),
-          const SizedBox(height: AppTheme.spacingM),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DatabaseRelationsScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.storage, size: 18),
-            label: const Text('데이터베이스 관계 구조'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade700,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
           ),
         ],
       ),

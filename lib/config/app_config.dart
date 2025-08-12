@@ -89,4 +89,10 @@ class AppConfig {
         return 15;
     }
   }
+  
+  // MVP 피드백 설정 (데이터 수집 기간)
+  static const bool isMvpPhase = true; // MVP 단계 여부
+  static const bool defaultFeedbackEnabled = true; // 피드백 기본값 ON
+  static const bool showQuickFeedback = true; // 재생화면 빠른 피드백 버튼
+  static const bool askOnCompletion = true; // 트랙 완료시 상세 피드백 (빠른 피드백 안한 경우)
 }

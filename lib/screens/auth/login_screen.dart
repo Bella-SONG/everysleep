@@ -21,6 +21,17 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   void initState() {
     super.initState();
     
+    // AuthProvider 초기화 확인
+    debugPrint('🔍 로그인 화면: AuthProvider 초기화 확인');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      debugPrint('🔍 로그인 화면: AuthProvider 상태 = ${authProvider.isAuthenticated}');
+      debugPrint('🔍 로그인 화면: 사용자 = ${authProvider.user?.id}');
+      
+      // OAuth 콜백으로 돌아온 경우 토큰 재확인
+      _checkForOAuthCallback();
+    });
+    
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -48,6 +59,27 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
+  Future<void> _checkForOAuthCallback() async {
+    debugPrint('🔍 인증 상태 확인 중...');
+    
+    try {
+      // 일반적인 인증 상태 확인
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!mounted) return;
+      
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.recheckAuthStatus();
+      
+      if (authProvider.isAuthenticated && mounted) {
+        debugPrint('✅ 자동 로그인 성공 - 홈으로 이동');
+        context.go('/main');
+      }
+    } catch (e) {
+      debugPrint('❌ 인증 상태 확인 에러: $e');
+    }
+  }
+
   Future<void> _handleKakaoLogin() async {
     debugPrint('카카오 로그인 버튼 클릭됨');
     final authProvider = context.read<AuthProvider>();
@@ -58,11 +90,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       debugPrint('카카오 로그인 결과: $success');
       debugPrint('인증 상태: ${authProvider.isAuthenticated}');
       
-      if (success && authProvider.isAuthenticated && mounted) {
+      if (success && mounted) {
         debugPrint('로그인 성공 - 메인 화면으로 이동');
-        await Future.delayed(const Duration(milliseconds: 500)); // 짧은 딜레이
-        if (mounted) {
+        // 상태 업데이트를 기다림
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted && authProvider.isAuthenticated) {
           context.go('/main');
+        } else {
+          // 상태가 아직 업데이트되지 않았다면 조금 더 기다림
+          await Future.delayed(const Duration(milliseconds: 400));
+          if (mounted && authProvider.isAuthenticated) {
+            context.go('/main');
+          }
         }
       } else if (mounted) {
         debugPrint('로그인 실패 - 에러 메시지 표시');

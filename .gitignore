@@ -91,6 +91,10 @@ kakao_config.dart
 database.json
 db_config.dart
 
+# Test and debug files with sensitive data
+test_supabase.dart
+debug_db.dart
+
 # Backup files that might contain sensitive data
 *.backup
 *.bak
