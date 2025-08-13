@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 import '../repositories/track_repository.dart';
 import '../repositories/hybrid_track_repository.dart';
 
@@ -432,5 +433,64 @@ class TrackRepositoryProvider with ChangeNotifier {
   /// 에러 클리어
   void clearError() {
     _setError(null);
+  }
+  
+  // === 자연음 관련 메서드들 ===
+  
+  /// 모든 자연음 조회
+  Future<List<NatureSound>> getAllNatureSounds() async {
+    _setLoading(true);
+    try {
+      final sounds = await _repository.getAllNatureSounds();
+      _setError(null);
+      return sounds;
+    } catch (e) {
+      _setError('자연음을 불러올 수 없습니다: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+  
+  /// 활성화된 자연음만 조회
+  Future<List<NatureSound>> getActiveNatureSounds() async {
+    _setLoading(true);
+    try {
+      final sounds = await _repository.getActiveNatureSounds();
+      _setError(null);
+      return sounds;
+    } catch (e) {
+      _setError('활성 자연음을 불러올 수 없습니다: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+  
+  /// 특정 자연음 조회
+  Future<NatureSound?> getNatureSoundByCode(String code) async {
+    try {
+      final sound = await _repository.getNatureSoundByCode(code);
+      _setError(null);
+      return sound;
+    } catch (e) {
+      _setError('자연음 조회 실패: $e');
+      rethrow;
+    }
+  }
+  
+  /// 자연음 정렬된 순서로 조회
+  Future<List<NatureSound>> getNatureSoundsSorted() async {
+    _setLoading(true);
+    try {
+      final sounds = await _repository.getNatureSoundsSorted();
+      _setError(null);
+      return sounds;
+    } catch (e) {
+      _setError('자연음 정렬 조회 실패: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
   }
 }

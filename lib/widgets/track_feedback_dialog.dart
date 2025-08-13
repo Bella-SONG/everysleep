@@ -31,7 +31,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
     with TickerProviderStateMixin {
   FeedbackStep _currentStep = FeedbackStep.initial;
   bool? _isPositive;
-  Set<String> _selectedOptions = <String>{};  // final 제거
+  Set<String> _selectedOptions = <String>{}; // final 제거
   final TextEditingController _textController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -40,13 +40,13 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
   @override
   void initState() {
     super.initState();
-    
+
     // 상태 초기화 (새로운 다이얼로그마다 깨끗한 상태로 시작)
     _currentStep = FeedbackStep.initial;
     _isPositive = null;
-    _selectedOptions = <String>{};  // 새로운 Set 할당으로 완전 초기화
+    _selectedOptions = <String>{}; // 새로운 Set 할당으로 완전 초기화
     _textController.clear();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -56,13 +56,13 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
       curve: Curves.easeInOut,
     );
     _animationController.forward();
-    
+
     // 초기값이 설정된 경우 바로 detailed 단계로 이동
     if (widget.initialIsPositive != null) {
       _isPositive = widget.initialIsPositive;
       _currentStep = FeedbackStep.detailed;
     }
-    
+
     // 20초 후 자동으로 모달 닫기
     _startAutoCloseTimer();
   }
@@ -111,29 +111,30 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
 
   void _submitFeedback() {
     _cancelAutoCloseTimer(); // 사용자 액션 시 타이머 취소
-    
+
     // 카카오 사용자 ID 또는 Supabase ID 또는 랜덤 UUID 사용
     final authProvider = context.read<AuthProvider>();
     final kakaoUserId = authProvider.user?.id.toString();
-    final userId = kakaoUserId ?? 
-                   Supabase.instance.client.auth.currentUser?.id ?? 
-                   const Uuid().v4();
-    
+    final userId =
+        kakaoUserId ??
+        Supabase.instance.client.auth.currentUser?.id ??
+        const Uuid().v4();
+
     // 현재 선택된 테마 ID 가져오기
     final themeProvider = context.read<ThemeProvider>();
     final themeId = themeProvider.selectedTheme?.id.toString();
-    
+
     final feedback = TrackFeedback.now(
-      trackId: widget.track.id.toString(),  // id를 문자열로 변환
-      themeId: themeId,  // 테마 ID (없으면 null)
+      trackId: widget.track.id.toString(), // id를 문자열로 변환
+      themeId: themeId, // 테마 ID (없으면 null)
       userId: userId,
       isPositive: _isPositive!,
       selectedOptions: _selectedOptions.toList(),
-      feedbackText: _textController.text.trim().isEmpty 
-          ? null 
+      feedbackText: _textController.text.trim().isEmpty
+          ? null
           : _textController.text.trim(),
     );
-    
+
     // 피드백 제출 후 즉시 상태 초기화
     setState(() {
       _selectedOptions = <String>{};
@@ -141,7 +142,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
       _isPositive = null;
       _currentStep = FeedbackStep.initial;
     });
-    
+
     widget.onSubmitFeedback(feedback);
     _showThankYou();
   }
@@ -150,7 +151,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
     setState(() {
       _currentStep = FeedbackStep.thankYou;
     });
-    
+
     // 2초 후 닫기
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -177,11 +178,11 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
             maxHeight: 600, // 최대 높이 제한
           ),
           decoration: BoxDecoration(
-            color: _isPositive == null 
+            color: _isPositive == null
                 ? Colors.white
-                : _isPositive! 
-                    ? const Color(0xFFE8F5E8)  // 연한 초록색
-                    : const Color(0xFFFFF3E0), // 연한 주황색
+                : _isPositive!
+                ? const Color(0xFFE8F5E8) // 연한 초록색
+                : const Color(0xFFFFF3E0), // 연한 주황색
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -217,11 +218,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.music_note,
-          size: 48,
-          color: AppTheme.primaryColor,
-        ),
+        const Icon(Icons.music_note, size: 48, color: AppTheme.primaryColor),
         const SizedBox(height: 16),
         Text(
           '"${widget.track.title}"',
@@ -234,9 +231,9 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
         const SizedBox(height: 8),
         Text(
           '재생이 끝났습니다',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textSecondaryColor,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryColor),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
@@ -277,10 +274,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
           onPressed: _skipFeedback,
           child: Text(
             '다음에 하기',
-            style: TextStyle(
-              color: AppTheme.textSecondaryColor,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 16),
           ),
         ),
       ],
@@ -289,7 +283,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
 
   Widget _buildDetailedStep() {
     final options = FeedbackOptions.getOptions(
-      _isPositive! ? FeedbackType.positive : FeedbackType.negative
+      _isPositive! ? FeedbackType.positive : FeedbackType.negative,
     );
 
     return Column(
@@ -304,9 +298,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                _isPositive! 
-                    ? '좋았다니 다행이에요!'
-                    : '아쉬웠네요...',
+                _isPositive! ? '좋았다니 다행이에요!' : '아쉬웠네요...',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 20,
@@ -317,12 +309,10 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
         ),
         const SizedBox(height: 16),
         Text(
-          _isPositive!
-              ? '어떤 점이 좋았나요?'
-              : '어떤 점이 좋지 않았나요?',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 18,
-          ),
+          _isPositive! ? '어떤 점이 좋았나요?' : '어떤 점이 좋지 않았나요?',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontSize: 18),
         ),
         const SizedBox(height: 8),
         Text(
@@ -389,7 +379,9 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
               child: SizedBox(
                 height: 56, // 고정 높이
                 child: ElevatedButton(
-                  onPressed: _selectedOptions.isNotEmpty || _textController.text.trim().isNotEmpty
+                  onPressed:
+                      _selectedOptions.isNotEmpty ||
+                          _textController.text.trim().isNotEmpty
                       ? _submitFeedback
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -402,10 +394,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
                   ),
                   child: const Text(
                     '완료',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -427,11 +416,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
             color: Colors.green.shade100,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.check,
-            size: 48,
-            color: Colors.green.shade700,
-          ),
+          child: Icon(Icons.check, size: 48, color: Colors.green.shade700),
         ),
         const SizedBox(height: 24),
         Text(
@@ -444,7 +429,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
         ),
         const SizedBox(height: 12),
         Text(
-          '더 나은 수면 음악을 위해\n활용하겠습니다',
+          '소중한 의견,\n더 편안한 음악에 실어 드릴게요',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppTheme.textSecondaryColor,
             height: 1.5,
@@ -474,17 +459,11 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
         ),
         child: Column(
           children: [
-            Text(
-              icon,
-              style: const TextStyle(fontSize: 32),
-            ),
+            Text(icon, style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
           ],
@@ -495,7 +474,7 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
 
   Widget _buildOptionTile(FeedbackOption option) {
     final isSelected = _selectedOptions.contains(option.id);
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -504,14 +483,12 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected 
+            color: isSelected
                 ? AppTheme.primaryColor.withValues(alpha: 0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected 
-                  ? AppTheme.primaryColor
-                  : Colors.grey.shade300,
+              color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -521,26 +498,23 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey.shade400,
+                    color: isSelected
+                        ? AppTheme.primaryColor
+                        : Colors.grey.shade400,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: isSelected
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
-                      )
+                    ? const Icon(Icons.check, color: Colors.white, size: 16)
                     : null,
               ),
               const SizedBox(width: 12),
-              Text(
-                option.icon,
-                style: const TextStyle(fontSize: 20),
-              ),
+              Text(option.icon, style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -548,8 +522,8 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected 
-                        ? AppTheme.primaryColor 
+                    color: isSelected
+                        ? AppTheme.primaryColor
                         : AppTheme.textPrimaryColor,
                   ),
                 ),
@@ -562,8 +536,4 @@ class _TrackFeedbackDialogState extends State<TrackFeedbackDialog>
   }
 }
 
-enum FeedbackStep {
-  initial,
-  detailed,
-  thankYou,
-}
+enum FeedbackStep { initial, detailed, thankYou }

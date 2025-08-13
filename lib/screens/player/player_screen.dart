@@ -76,8 +76,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(success 
-                    ? '피드백이 저장되었습니다'
-                    : '피드백 저장에 실패했습니다'),
+                    ? '소중한 의견 감사합니다!'
+                    : '잠시 후 다시 시도해주세요'),
                 backgroundColor: success 
                     ? AppTheme.successColor 
                     : AppTheme.errorColor,
@@ -307,13 +307,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
           icon: Icon(
             audioProvider.isRepeatOne
                 ? Icons.repeat_one
-                : Icons.repeat,
-            color: audioProvider.isRepeatOne
+                : audioProvider.isRepeatAll
+                    ? Icons.repeat
+                    : Icons.repeat,
+            color: (audioProvider.isRepeatOne || audioProvider.isRepeatAll)
                 ? AppTheme.primaryColor
                 : Colors.white.withValues(alpha: 0.7),
           ),
           iconSize: 28,
-          onPressed: audioProvider.toggleRepeatOne,
+          onPressed: () {
+            // 3단계 순환: 반복 없음 → 플레이리스트 반복 → 한 곡 반복 → 반복 없음
+            if (!audioProvider.isRepeatOne && !audioProvider.isRepeatAll) {
+              audioProvider.toggleRepeatAll(); // 플레이리스트 반복
+            } else if (audioProvider.isRepeatAll) {
+              audioProvider.toggleRepeatOne(); // 한 곡 반복
+            } else {
+              audioProvider.toggleRepeatOne(); // 반복 해제
+            }
+          },
         ),
         IconButton(
           icon: const Icon(Icons.skip_previous, color: Colors.white),
@@ -569,6 +580,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       // 파일명에서 확장자 제거하고 소문자로 변환 후 .jpg로 매핑
       final filenameWithoutExt = track.fileName.split('.').first.toLowerCase();
       final imagePath = '$filenameWithoutExt.jpg';
+      // 메인 재생화면은 고화질 images 폴더 사용
       final imageUrl = SupabaseConfig.getImageUrl(imagePath);
       return CachedNetworkImageProvider(imageUrl);
     }

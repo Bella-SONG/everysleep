@@ -38,7 +38,7 @@ class SleepTimerDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppTheme.spacingM),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
                 child: Row(

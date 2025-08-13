@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../providers/audio_provider.dart';
+import '../providers/track_repository_provider.dart';
 import '../constants/app_theme.dart';
 import '../models/nature_sound.dart';
 
@@ -18,51 +19,10 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _rotationAnimation;
-
-  static final List<NatureSound> natureSounds = [
-    NatureSound(
-      id: 'E001',
-      name: '새소리',
-      icon: Symbols.raven,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E001_BIRD ASMR1.mp3',
-      color: const Color(0xFFFFC107), // 진한 노란색
-    ),
-    NatureSound(
-      id: 'E002',
-      name: '장작불소리',
-      icon: Icons.local_fire_department,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E002_FIRE ASMR.mp3',
-      color: const Color(0xFFFF5722), // 진한 주황색
-    ),
-    NatureSound(
-      id: 'E003',
-      name: '빗소리',
-      icon: Icons.grain,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E003_RAIN ASMR2.mp3',
-      color: const Color(0xFF4CAF50), // 진한 연두색
-    ),
-    NatureSound(
-      id: 'E004',
-      name: '물소리',
-      icon: Icons.water_drop,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E005_WATER ASMR.mp3',
-      color: const Color(0xFF03A9F4), // 진한 하늘색
-    ),
-    NatureSound(
-      id: 'E005',
-      name: '파도소리', 
-      icon: Icons.waves,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E004_WAVE ASMR.mp3',
-      color: const Color(0xFF2196F3), // 진한 파랑
-    ),
-    NatureSound(
-      id: 'E006',
-      name: '바람소리',
-      icon: Icons.air,
-      url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E006_WIND ASMR.mp3',
-      color: const Color(0xFF607D8B), // 진한 회색
-    ),
-  ];
+  
+  List<NatureSound> _natureSounds = [];
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -85,6 +45,32 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+    
+    _loadNatureSounds();
+  }
+  
+  /// 자연음 데이터 로드
+  Future<void> _loadNatureSounds() async {
+    try {
+      final trackRepositoryProvider = context.read<TrackRepositoryProvider>();
+      final sounds = await trackRepositoryProvider.getNatureSoundsSorted();
+      
+      if (mounted) {
+        setState(() {
+          _natureSounds = sounds;
+          _isLoading = false;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _natureSounds = [];
+          _isLoading = false;
+          _error = '자연음 데이터를 불러올 수 없습니다: $e';
+        });
+      }
+    }
   }
 
   @override
@@ -290,95 +276,7 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
                       children: [
                         const Divider(height: 1),
                         const SizedBox(height: AppTheme.spacingM),
-                        GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 3,
-                          crossAxisSpacing: AppTheme.spacingM,
-                          mainAxisSpacing: AppTheme.spacingM,
-                          childAspectRatio: 1,
-                          children: natureSounds.map((sound) {
-                            final isSelected = currentSound?.id == sound.id;
-                            
-                            return GestureDetector(
-                              onTap: () {
-                                if (isSelected) {
-                                  audioProvider.loadNatureSound(null);
-                                } else {
-                                  audioProvider.loadNatureSound(sound);
-                                }
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                decoration: BoxDecoration(
-                                  gradient: isSelected 
-                                      ? LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            AppTheme.secondaryColor.withValues(alpha: 0.15),
-                                            AppTheme.secondaryColor.withValues(alpha: 0.25),
-                                          ],
-                                        )
-                                      : LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.grey.shade50,
-                                            Colors.grey.shade100,
-                                          ],
-                                        ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected 
-                                        ? AppTheme.secondaryColor 
-                                        : Colors.grey.shade200,
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                  boxShadow: isSelected ? [
-                                    BoxShadow(
-                                      color: AppTheme.secondaryColor.withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ] : [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.05),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      sound.icon,
-                                      size: isSelected ? 48 : 44,
-                                      color: isSelected 
-                                          ? sound.color 
-                                          : sound.color.withValues(alpha: 0.85),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      sound.name,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected 
-                                            ? AppTheme.secondaryColor 
-                                            : AppTheme.textSecondaryColor,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        _buildNatureSoundGrid(audioProvider, currentSound),
                       ],
                     ),
                   ),
@@ -388,6 +286,152 @@ class _NatureSoundSelectorState extends State<NatureSoundSelector>
           ),
         ],
       ),
+    );
+  }
+  
+  /// 자연음 그리드 빌드 (로딩/에러 상태 처리)
+  Widget _buildNatureSoundGrid(dynamic audioProvider, dynamic currentSound) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    
+    if (_error != null) {
+      return Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade400,
+              size: 48,
+            ),
+            const SizedBox(height: AppTheme.spacingS),
+            Text(
+              '자연음 로딩 실패',
+              style: TextStyle(
+                color: Colors.red.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingXS),
+            Text(
+              _error!,
+              style: TextStyle(
+                color: Colors.red.shade400,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacingS),
+            ElevatedButton(
+              onPressed: _loadNatureSounds,
+              child: const Text('다시 시도'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_natureSounds.isEmpty) {
+      return const Center(
+        child: Text(
+          '자연음이 없습니다',
+          style: TextStyle(
+            color: AppTheme.textSecondaryColor,
+          ),
+        ),
+      );
+    }
+    
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 3,
+      crossAxisSpacing: AppTheme.spacingM,
+      mainAxisSpacing: AppTheme.spacingM,
+      childAspectRatio: 1,
+      children: _natureSounds.map((sound) {
+        final isSelected = currentSound?.idString == sound.code;
+        
+        return GestureDetector(
+          onTap: () {
+            if (isSelected) {
+              audioProvider.loadNatureSound(null);
+            } else {
+              audioProvider.loadNatureSound(sound);
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              gradient: isSelected 
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppTheme.secondaryColor.withValues(alpha: 0.15),
+                        AppTheme.secondaryColor.withValues(alpha: 0.25),
+                      ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.grey.shade50,
+                        Colors.grey.shade100,
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected 
+                    ? AppTheme.secondaryColor 
+                    : Colors.grey.shade200,
+                width: isSelected ? 2 : 1,
+              ),
+              boxShadow: isSelected ? [
+                BoxShadow(
+                  color: AppTheme.secondaryColor.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ] : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  sound.icon,
+                  size: isSelected ? 48 : 44,
+                  color: isSelected 
+                      ? sound.color 
+                      : sound.color.withValues(alpha: 0.85),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  sound.name,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected 
+                        ? AppTheme.secondaryColor 
+                        : AppTheme.textSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -26,7 +26,7 @@ class BottomPlayer extends StatelessWidget {
         placeholder: (context, url) => Container(
           width: 48,
           height: 48,
-          color: AppTheme.primaryColor.withOpacity(0.1),
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
           child: const Center(
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
@@ -34,7 +34,7 @@ class BottomPlayer extends StatelessWidget {
         errorWidget: (context, url, error) => Container(
           width: 48,
           height: 48,
-          color: AppTheme.primaryColor.withOpacity(0.1),
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
           child: const Icon(
             Icons.music_note,
             color: AppTheme.primaryColor,
@@ -72,7 +72,7 @@ class BottomPlayer extends StatelessWidget {
           color: AppTheme.surfaceColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

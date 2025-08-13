@@ -63,7 +63,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
         elevation: 2,
-        shadowColor: primaryColor.withOpacity(0.3),
+        shadowColor: primaryColor.withValues(alpha: 0.3),
       ),
     ),
     textButtonTheme: TextButtonThemeData(

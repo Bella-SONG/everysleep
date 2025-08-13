@@ -15,22 +15,44 @@ class RecommendedMusicScreen extends StatefulWidget {
   State<RecommendedMusicScreen> createState() => _RecommendedMusicScreenState();
 }
 
-class _RecommendedMusicScreenState extends State<RecommendedMusicScreen> {
+class _RecommendedMusicScreenState extends State<RecommendedMusicScreen> 
+    with SingleTickerProviderStateMixin {
   String _selectedCategory = '전체';
   List<Track> _tracks = [];
   List<String> _categories = [];
 
   bool _isInitialized = false;
+  bool _isCategoryExpanded = true; // 기본적으로 열려있음
+  late AnimationController _animationController;
+  late Animation<double> _expandAnimation;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    
+    // 초기 상태 설정 (열려있음)
+    _animationController.value = 1.0;
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isInitialized) {
         _isInitialized = true;
         _loadInitialData();
       }
     });
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadInitialData() async {
@@ -211,55 +233,164 @@ class _RecommendedMusicScreenState extends State<RecommendedMusicScreen> {
     }
 
     return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(vertical: AppTheme.spacingM),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final category = _categories[index];
-          final isSelected = _selectedCategory == category;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: AppTheme.spacingM),
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedCategory = category;
-                });
-                _loadTracksByCategory();
-              },
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingL,
-                  vertical: AppTheme.spacingS,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : AppTheme.surfaceColor,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppTheme.primaryColor
-                        : Colors.transparent,
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingL,
+        vertical: AppTheme.spacingM,
+      ),
+      child: Column(
+        children: [
+          // 헤더 - 접기/펼치기 버튼
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isCategoryExpanded = !_isCategoryExpanded;
+              });
+              if (_isCategoryExpanded) {
+                _animationController.forward();
+              } else {
+                _animationController.reverse();
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingL,
+                vertical: AppTheme.spacingM,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                ),
-                child: Text(
-                  category,
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : AppTheme.textPrimaryColor,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(
+                      Icons.library_music_rounded,
+                      color: AppTheme.primaryColor,
+                      size: 20,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: AppTheme.spacingM),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '음악 카테고리',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '선택된 카테고리: $_selectedCategory',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _isCategoryExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: AppTheme.textSecondaryColor,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+          
+          // 카테고리 버튼들 - 애니메이션으로 펼치기/접기
+          SizeTransition(
+            sizeFactor: _expandAnimation,
+            child: Container(
+              margin: const EdgeInsets.only(top: AppTheme.spacingS),
+              padding: const EdgeInsets.all(AppTheme.spacingM),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              ),
+              child: Wrap(
+                spacing: AppTheme.spacingS,
+                runSpacing: AppTheme.spacingS,
+                children: _categories.map((category) {
+                  final isSelected = _selectedCategory == category;
+                  
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedCategory = category;
+                      });
+                      _loadTracksByCategory();
+                    },
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.primaryColor
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: isSelected ? [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ] : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : AppTheme.textPrimaryColor,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontSize: 16, // 시니어 친화적인 큰 글씨
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

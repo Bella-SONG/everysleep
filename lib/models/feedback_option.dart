@@ -40,7 +40,7 @@ class FeedbackOption {
 enum FeedbackType { positive, negative }
 
 class FeedbackOptions {
-  // 긍정적 피드백 옵션들
+  // 긍정적 피드백 옵션들 (수면 질 개선, 앱 만족도 통계용)
   static const List<FeedbackOption> positiveOptions = [
     FeedbackOption(
       id: 'sleep_well',
@@ -57,49 +57,28 @@ class FeedbackOptions {
       displayOrder: 2,
     ),
     FeedbackOption(
-      id: 'focused',
-      type: FeedbackType.positive,
-      optionText: '집중이 잘됐어요',
-      icon: '🎯',
-      displayOrder: 3,
-    ),
-    FeedbackOption(
-      id: 'stress_relief',
-      type: FeedbackType.positive,
-      optionText: '스트레스가 줄었어요',
-      icon: '😮‍💨',
-      displayOrder: 4,
-    ),
-    FeedbackOption(
       id: 'good_mood',
       type: FeedbackType.positive,
       optionText: '기분이 좋아졌어요',
       icon: '😊',
-      displayOrder: 5,
-    ),
-    FeedbackOption(
-      id: 'body_relaxed',
-      type: FeedbackType.positive,
-      optionText: '몸이 이완됐어요',
-      icon: '🧘',
-      displayOrder: 6,
+      displayOrder: 3,
     ),
     FeedbackOption(
       id: 'tinnitus_relief',
       type: FeedbackType.positive,
-      optionText: '귀가 편안해졌어요',
+      optionText: '귀가 편해졌어요',
       icon: '👂',
-      displayOrder: 7,
+      displayOrder: 4,
     ),
   ];
 
-  // 부정적 피드백 옵션들
+  // 부정적 피드백 옵션들 (수면 질 개선, 앱 만족도 통계용)
   static const List<FeedbackOption> negativeOptions = [
     FeedbackOption(
-      id: 'no_sleep',
+      id: 'no_effect',
       type: FeedbackType.negative,
-      optionText: '잠이 안 왔어요',
-      icon: '😵',
+      optionText: '효과를 못 느꼈어요',
+      icon: '😐',
       displayOrder: 1,
     ),
     FeedbackOption(
@@ -110,46 +89,32 @@ class FeedbackOptions {
       displayOrder: 2,
     ),
     FeedbackOption(
-      id: 'boring',
+      id: 'too_quiet',
       type: FeedbackType.negative,
-      optionText: '지루했어요',
-      icon: '😑',
+      optionText: '너무 조용했어요',
+      icon: '🔇',
       displayOrder: 3,
     ),
     FeedbackOption(
-      id: 'no_focus',
+      id: 'music_disappointing',
       type: FeedbackType.negative,
-      optionText: '집중이 안됐어요',
-      icon: '🌀',
+      optionText: '음악이 아쉬워요',
+      icon: '🎵',
       displayOrder: 4,
-    ),
-    FeedbackOption(
-      id: 'anxious',
-      type: FeedbackType.negative,
-      optionText: '불안해졌어요',
-      icon: '😰',
-      displayOrder: 5,
-    ),
-    FeedbackOption(
-      id: 'bad_quality',
-      type: FeedbackType.negative,
-      optionText: '음질이 좋지 않았어요',
-      icon: '📻',
-      displayOrder: 6,
-    ),
-    FeedbackOption(
-      id: 'wrong_length',
-      type: FeedbackType.negative,
-      optionText: '길이가 적당하지 않았어요',
-      icon: '⏰',
-      displayOrder: 7,
     ),
     FeedbackOption(
       id: 'not_my_taste',
       type: FeedbackType.negative,
       optionText: '제 취향이 아니에요',
       icon: '🤷',
-      displayOrder: 8,
+      displayOrder: 5,
+    ),
+    FeedbackOption(
+      id: 'app_inconvenient',
+      type: FeedbackType.negative,
+      optionText: '앱 이용이 불편했어요',
+      icon: '📱',
+      displayOrder: 6,
     ),
   ];
 

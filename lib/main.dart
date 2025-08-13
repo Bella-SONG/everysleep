@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/supabase_config.dart';
 import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
@@ -143,6 +144,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             theme: AppTheme.getLightTheme(fontSizeProvider.scaleFactor),
             routerConfig: router,
             debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('ko', 'KR'), // 한국어
+              Locale('en', 'US'), // 영어 (fallback)
+            ],
+            locale: const Locale('ko', 'KR'),
           );
         },
       ),

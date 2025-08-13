@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 import '../services/supabase_service.dart';
 import 'track_repository.dart';
 
@@ -293,6 +294,59 @@ class SupabaseTrackRepository implements TrackRepository {
     } catch (e) {
       if (kDebugMode) {
         print('❌ SupabaseTrackRepository.getTrackById error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  // === 자연음 전용 메서드 구현 ===
+  
+  @override
+  Future<List<NatureSound>> getAllNatureSounds() async {
+    try {
+      return await _supabaseService.getNatureSounds();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SupabaseTrackRepository.getAllNatureSounds error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<List<NatureSound>> getActiveNatureSounds() async {
+    try {
+      final allSounds = await getAllNatureSounds();
+      return allSounds.where((sound) => sound.isActive).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SupabaseTrackRepository.getActiveNatureSounds error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<NatureSound?> getNatureSoundByCode(String code) async {
+    try {
+      return await _supabaseService.getNatureSoundByCode(code);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SupabaseTrackRepository.getNatureSoundByCode error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<List<NatureSound>> getNatureSoundsSorted() async {
+    try {
+      final allSounds = await getActiveNatureSounds();
+      allSounds.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+      return allSounds;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SupabaseTrackRepository.getNatureSoundsSorted error: $e');
       }
       rethrow;
     }

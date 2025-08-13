@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/track.dart';
 import '../models/theme.dart';
 import '../models/mood.dart';
+import '../models/nature_sound.dart';
 
 class SupabaseService {
   // 싱글톤 패턴
@@ -517,6 +518,66 @@ class SupabaseService {
         print('❌ Error getting data summary: $e');
       }
       return {'themes': 0, 'tracks': 0, 'moods': 0};
+    }
+  }
+  
+  // ======================== NATURE SOUNDS ========================
+  
+  /// 모든 자연음 조회
+  Future<List<NatureSound>> getNatureSounds() async {
+    try {
+      if (kDebugMode) {
+        print('🔍 SupabaseService: getNatureSounds() 시작');
+      }
+      
+      final response = await _client
+          .from('nature_sounds')
+          .select('*')
+          .order('display_order');
+      
+      if (kDebugMode) {
+        print('✅ 자연음 ${response.length}개 조회 성공');
+      }
+      
+      return response.map((json) => NatureSound.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ getNatureSounds 오류: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  /// 특정 코드로 자연음 조회
+  Future<NatureSound?> getNatureSoundByCode(String code) async {
+    try {
+      if (kDebugMode) {
+        print('🔍 SupabaseService: getNatureSoundByCode($code) 시작');
+      }
+      
+      final response = await _client
+          .from('nature_sounds')
+          .select('*')
+          .eq('code', code)
+          .maybeSingle();
+      
+      if (response == null) {
+        if (kDebugMode) {
+          print('⚠️ 자연음 코드 $code를 찾을 수 없음');
+        }
+        return null;
+      }
+      
+      if (kDebugMode) {
+        print('✅ 자연음 코드 $code 조회 성공');
+      }
+      
+      return NatureSound.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ getNatureSoundByCode 오류: $e');
+      }
+      rethrow;
     }
   }
 }

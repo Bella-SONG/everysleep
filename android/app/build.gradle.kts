@@ -19,6 +19,13 @@ android {
         jvmTarget = "17"
     }
 
+    // JVM 툴체인 명시적 설정으로 Java 8 경고 제거
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.everysleep.everysleep"

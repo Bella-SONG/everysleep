@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 import '../config/app_config.dart';
 import '../services/supabase_service.dart';
 import 'track_repository.dart';
@@ -260,5 +261,39 @@ class HybridTrackRepository implements TrackRepository {
     if (kDebugMode) {
       print('🗑️ Cache cleared');
     }
+  }
+  
+  // === 자연음 전용 메서드 구현 ===
+  
+  @override
+  Future<List<NatureSound>> getAllNatureSounds() async {
+    return await _executeWithFallback<List<NatureSound>>(
+      (repo) => repo.getAllNatureSounds(),
+      (repo) => repo.getAllNatureSounds(),
+    );
+  }
+  
+  @override
+  Future<List<NatureSound>> getActiveNatureSounds() async {
+    return await _executeWithFallback<List<NatureSound>>(
+      (repo) => repo.getActiveNatureSounds(),
+      (repo) => repo.getActiveNatureSounds(),
+    );
+  }
+  
+  @override
+  Future<NatureSound?> getNatureSoundByCode(String code) async {
+    return await _executeWithFallback<NatureSound?>(
+      (repo) => repo.getNatureSoundByCode(code),
+      (repo) => repo.getNatureSoundByCode(code),
+    );
+  }
+  
+  @override
+  Future<List<NatureSound>> getNatureSoundsSorted() async {
+    return await _executeWithFallback<List<NatureSound>>(
+      (repo) => repo.getNatureSoundsSorted(),
+      (repo) => repo.getNatureSoundsSorted(),
+    );
   }
 }

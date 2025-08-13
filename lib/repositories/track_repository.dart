@@ -1,4 +1,5 @@
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 
 /// 트랙 데이터 접근을 위한 Repository 인터페이스
 abstract class TrackRepository {
@@ -49,4 +50,18 @@ abstract class TrackRepository {
   
   /// 특정 트랙 조회
   Future<Track?> getTrackById(int trackId);
+  
+  // === 자연음 전용 메서드들 ===
+  
+  /// 모든 자연음 조회
+  Future<List<NatureSound>> getAllNatureSounds();
+  
+  /// 활성화된 자연음만 조회
+  Future<List<NatureSound>> getActiveNatureSounds();
+  
+  /// 특정 자연음 조회
+  Future<NatureSound?> getNatureSoundByCode(String code);
+  
+  /// 자연음 표시 순서대로 조회
+  Future<List<NatureSound>> getNatureSoundsSorted();
 }

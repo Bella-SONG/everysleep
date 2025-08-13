@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/track.dart';
+import '../models/nature_sound.dart';
 import '../utils/sample_data.dart';
 import 'track_repository.dart';
 
@@ -238,5 +239,138 @@ class SampleTrackRepository implements TrackRepository {
       }
       rethrow;
     }
+  }
+  
+  // === 자연음 전용 메서드 구현 (샘플 데이터) ===
+  
+  @override
+  Future<List<NatureSound>> getAllNatureSounds() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 50));
+      return _getSampleNatureSounds();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SampleTrackRepository.getAllNatureSounds error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<List<NatureSound>> getActiveNatureSounds() async {
+    try {
+      final allSounds = await getAllNatureSounds();
+      return allSounds.where((sound) => sound.isActive).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SampleTrackRepository.getActiveNatureSounds error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<NatureSound?> getNatureSoundByCode(String code) async {
+    try {
+      final allSounds = await getAllNatureSounds();
+      return allSounds.where((sound) => sound.code == code).firstOrNull;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SampleTrackRepository.getNatureSoundByCode error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  @override
+  Future<List<NatureSound>> getNatureSoundsSorted() async {
+    try {
+      final activeSounds = await getActiveNatureSounds();
+      activeSounds.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+      return activeSounds;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SampleTrackRepository.getNatureSoundsSorted error: $e');
+      }
+      rethrow;
+    }
+  }
+  
+  /// 샘플 자연음 데이터 생성
+  List<NatureSound> _getSampleNatureSounds() {
+    return [
+      NatureSound(
+        id: 1,
+        code: 'E001',
+        title: '새소리(ASMR)',
+        description: '이른 아침 새들의 인사소리로 하루를 시작해보세요.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E001_BIRD_ASMR1.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E001_BIRD_ASMR1.jpg',
+        fileName: 'E001_BIRD_ASMR1.mp3',
+        iconName: 'raven',
+        colorCode: '#FFC107',
+        displayOrder: 1,
+      ),
+      NatureSound(
+        id: 2,
+        code: 'E002',
+        title: '장작불소리(ASMR)',
+        description: '벽난로 옆 장작이 타는 소리는 마음이 안정됩니다.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E002_FIRE_ASMR.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E002_FIRE_ASMR.jpg',
+        fileName: 'E002_FIRE_ASMR.mp3',
+        iconName: 'fire',
+        colorCode: '#FF5722',
+        displayOrder: 2,
+      ),
+      NatureSound(
+        id: 3,
+        code: 'E003',
+        title: '빗소리(ASMR)',
+        description: '빗방울 리듬이 마음을 온전하게 만들어줍니다.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E003_RAIN_ASMR2.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E003_RAIN_ASMR2.jpg',
+        fileName: 'E003_RAIN_ASMR2.mp3',
+        iconName: 'rain',
+        colorCode: '#4CAF50',
+        displayOrder: 3,
+      ),
+      NatureSound(
+        id: 4,
+        code: 'E004',
+        title: '물소리(ASMR)',
+        description: '맑고 투명한 계곡물이 흐르는 숲 속에 귀기울여보세요.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E004_WATER_ASMR.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E004_WATER_ASMR.jpg',
+        fileName: 'E004_WATER_ASMR.mp3',
+        iconName: 'water_drop',
+        colorCode: '#03A9F4',
+        displayOrder: 4,
+      ),
+      NatureSound(
+        id: 5,
+        code: 'E005',
+        title: '파도소리(ASMR)',
+        description: '시원한 바닷바람과 파도소리로 휴식을 취하세요.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E005_WAVE_ASMR.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E005_WAVE_ASMR.jpg',
+        fileName: 'E005_WAVE_ASMR.mp3',
+        iconName: 'waves',
+        colorCode: '#2196F3',
+        displayOrder: 5,
+      ),
+      NatureSound(
+        id: 6,
+        code: 'E006',
+        title: '바람소리(ASMR)',
+        description: '시원해지는 숲 속의 바람소리로 마음을 이완시켜보세요.',
+        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/effects/E006_WIND_ASMR.mp3',
+        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/E006_WIND_ASMR.jpg',
+        fileName: 'E006_WIND_ASMR.mp3',
+        iconName: 'air',
+        colorCode: '#607D8B',
+        displayOrder: 6,
+      ),
+    ];
   }
 }
