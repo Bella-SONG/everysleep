@@ -49,7 +49,9 @@ class Track {
       effectKeywords: _parseKeywords(json), // 정규화된 데이터 파싱
       isAsmr: json['is_asmr'] as bool? ?? false,
       displayOrder: json['display_order'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at'] as String) 
+          : DateTime.now(),
     );
   }
 
@@ -62,11 +64,19 @@ class Track {
           .toList();
     }
     
-    // 정규화된 방식 (관계 테이블에서 조인된 데이터)
+    // track_details 뷰의 JSONB 형태 ([{"name": "수면"}, {"name": "이완"}])
     if (json['keywords'] != null && json['keywords'] is List) {
-      return (json['keywords'] as List)
-          .map((keyword) => keyword['name'] as String)
-          .toList();
+      final keywordsList = json['keywords'] as List<dynamic>;
+      
+      // JSONB 객체 배열인 경우
+      if (keywordsList.isNotEmpty && keywordsList.first is Map) {
+        return keywordsList
+            .map((item) => (item as Map<String, dynamic>)['name'] as String)
+            .toList();
+      }
+      
+      // 단순 문자열 배열인 경우
+      return keywordsList.map((keyword) => keyword.toString()).toList();
     }
     
     return [];

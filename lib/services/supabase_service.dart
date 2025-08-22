@@ -265,6 +265,9 @@ class SupabaseService {
 
       if (kDebugMode) {
         print('✅ Tracks fetched: ${response.length} items');
+        if (response.isNotEmpty) {
+          print('📋 첫 번째 track: ${response.first}');
+        }
       }
 
       return response.map<Track>((json) => Track.fromJson(json)).toList();

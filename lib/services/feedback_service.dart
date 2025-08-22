@@ -8,27 +8,14 @@ class FeedbackService {
   // 데이터베이스 연결 및 테이블 존재 확인
   static Future<bool> testDatabaseConnection() async {
     try {
-      print('🔍 데이터베이스 연결 테스트 시작...');
-      
-      // 현재 세션 상태 확인
-      final session = _client.auth.currentSession;
-      print('🔑 현재 세션: ${session != null ? "존재" : "없음"}');
-      if (session != null) {
-        print('👤 사용자 ID: ${session.user.id}');
-        print('⏰ 토큰 만료 시간: ${DateTime.fromMillisecondsSinceEpoch(session.expiresAt! * 1000)}');
-        print('🕐 현재 시간: ${DateTime.now()}');
-      }
-      
       // user_feedback 테이블 존재 확인
-      final response = await _client
+      await _client
           .from('user_feedback')
           .select('id')
           .limit(1);
           
-      print('✅ user_feedback 테이블 접근 성공: ${response.length}개 레코드');
       return true;
     } catch (e) {
-      print('❌ 데이터베이스 연결 실패: $e');
       return false;
     }
   }
@@ -46,17 +33,12 @@ class FeedbackService {
         'created_at': DateTime.now().toIso8601String(),
       };
       
-      print('🔄 피드백 제출 시도: $feedbackData');
-      
-      final response = await _client
+      await _client
           .from('user_feedback')
           .insert(feedbackData);
 
-      print('✅ 피드백 제출 성공: $response');
       return true;
     } catch (e) {
-      print('❌ 피드백 제출 실패: $e');
-      print('📊 피드백 데이터: ${feedback.toJson()}');
       return false;
     }
   }
@@ -74,7 +56,6 @@ class FeedbackService {
           .map((item) => TrackFeedback.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('피드백 히스토리 조회 실패: $e');
       return [];
     }
   }
@@ -110,7 +91,6 @@ class FeedbackService {
         'positive_rate': (positiveCount.count / total * 100).round(),
       };
     } catch (e) {
-      print('트랙 피드백 통계 조회 실패: $e');
       return null;
     }
   }
@@ -148,7 +128,6 @@ class FeedbackService {
       
       return sortedEffects;
     } catch (e) {
-      print('선호 효과 분석 실패: $e');
       return [];
     }
   }
@@ -186,7 +165,6 @@ class FeedbackService {
       
       return sortedIssues;
     } catch (e) {
-      print('개선점 분석 실패: $e');
       return [];
     }
   }
@@ -255,7 +233,6 @@ class FeedbackService {
         'satisfaction_rate': (positive / total * 100).round(),
       };
     } catch (e) {
-      print('전체 통계 조회 실패: $e');
       return null;
     }
   }

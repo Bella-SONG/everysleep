@@ -4,20 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/audio_provider.dart';
 import '../constants/app_theme.dart';
-import '../config/supabase_config.dart';
 
 class BottomPlayer extends StatelessWidget {
   const BottomPlayer({super.key});
 
   Widget _buildThumbnailImage(dynamic track) {
-    // Supabase Storage에서 썸네일 이미지 가져오기 (곡 파일명 기반)
-    if (track.fileName != null) {
-      final filenameWithoutExt = track.fileName!.split('.').first.toLowerCase();
-      final imagePath = '$filenameWithoutExt.jpg';
-      final imageUrl = SupabaseConfig.getThumbnailUrl(imagePath);
-      
+    // track_details 뷰에서 직접 썸네일 URL 사용
+    if (track.thumbnail != null && track.thumbnail!.isNotEmpty) {
       return CachedNetworkImage(
-        imageUrl: imageUrl,
+        imageUrl: track.thumbnail!,
         width: 48,
         height: 48,
         fit: BoxFit.cover,
@@ -47,7 +42,7 @@ class BottomPlayer extends StatelessWidget {
     return Container(
       width: 48,
       height: 48,
-      color: AppTheme.primaryColor.withOpacity(0.1),
+      color: AppTheme.primaryColor.withValues(alpha: 0.1),
       child: const Icon(
         Icons.music_note,
         color: AppTheme.primaryColor,

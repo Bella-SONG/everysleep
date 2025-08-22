@@ -21,7 +21,7 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   bool? _hasGivenFeedback; // null: 아직 안함, true: 좋아요, false: 싫어요
-  
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +31,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void _testDatabaseConnection() async {
-    final isConnected = await FeedbackService.testDatabaseConnection();
-    print('📊 데이터베이스 연결 상태: ${isConnected ? '성공' : '실패'}');
+    await FeedbackService.testDatabaseConnection();
   }
 
   void _setupFeedbackCallback() {
@@ -46,18 +45,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   void _showFeedbackDialog(dynamic track) {
     if (!mounted) return;
-    
+
     // 이미 빠른 피드백을 줬으면 상세 다이얼로그 생략
     if (_hasGivenFeedback != null) {
       return;
     }
-    
+
     _showFeedbackDialogWithInitialValue(track, null);
   }
 
-  void _showFeedbackDialogWithInitialValue(dynamic track, bool? initialIsPositive) {
+  void _showFeedbackDialogWithInitialValue(
+    dynamic track,
+    bool? initialIsPositive,
+  ) {
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -72,14 +74,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
             setState(() {
               _hasGivenFeedback = null;
             });
-            
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(success 
-                    ? '소중한 의견 감사합니다!'
-                    : '잠시 후 다시 시도해주세요'),
-                backgroundColor: success 
-                    ? AppTheme.successColor 
+                content: Text(success ? '소중한 의견 감사합니다!' : '잠시 후 다시 시도해주세요'),
+                backgroundColor: success
+                    ? AppTheme.successColor
                     : AppTheme.errorColor,
               ),
             );
@@ -92,14 +92,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void _quickFeedback(bool isPositive) {
     final audioProvider = context.read<AudioProvider>();
     final track = audioProvider.currentTrack;
-    
+
     if (track == null) {
-      print('❌ 빠른 피드백 실패: 현재 트랙이 없음');
       return;
     }
-    
-    print('🎵 빠른 피드백 시작: ${track.title} (${isPositive ? '👍' : '👎'})');
-    
+
     // 피드백 모달 띄우기 (초기값 설정)
     _showFeedbackDialogWithInitialValue(track, isPositive);
   }
@@ -108,13 +105,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final routeState = GoRouterState.of(context);
       final extra = routeState.extra as Map<String, dynamic>?;
-      
+
       if (extra != null) {
         final track = extra['track'];
         final playlist = extra['playlist'] as List?;
         final currentIndex = extra['currentIndex'] as int?;
-        final theme = extra['theme'];  // 테마 정보 받기
-        
+        final theme = extra['theme']; // 테마 정보 받기
+
         // 테마 정보가 있으면 ThemeProvider에 설정
         if (theme != null) {
           final themeProvider = context.read<ThemeProvider>();
@@ -123,17 +120,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
             themeProvider.selectTheme(theme);
           }
         }
-        
+
         if (track != null) {
           // 새 트랙 로드시 피드백 상태 리셋
           setState(() {
             _hasGivenFeedback = null;
           });
-          
+
           final audioProvider = context.read<AudioProvider>();
           if (playlist != null && playlist.isNotEmpty) {
             // currentIndex가 있으면 해당 인덱스부터 시작, 없으면 0부터
-            audioProvider.loadPlaylist(List.from(playlist), startIndex: currentIndex ?? 0);
+            audioProvider.loadPlaylist(
+              List.from(playlist),
+              startIndex: currentIndex ?? 0,
+            );
           } else {
             audioProvider.loadTrack(track);
           }
@@ -156,9 +156,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: const Center(
-          child: Text('재생 중인 음악이 없습니다'),
-        ),
+        body: const Center(child: Text('재생 중인 음악이 없습니다')),
       );
     }
 
@@ -195,7 +193,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         onPressed: () => context.pop(),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.timer_outlined, color: Colors.white),
+                        icon: const Icon(
+                          Icons.timer_outlined,
+                          color: Colors.white,
+                        ),
                         onPressed: () => _showSleepTimerDialog(context),
                       ),
                     ],
@@ -206,15 +207,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     padding: const EdgeInsets.all(AppTheme.spacingL),
                     child: Column(
                       children: [
-                        const SizedBox(height: AppTheme.spacingXL * 3), // 상단 여백
+                        const SizedBox(height: AppTheme.spacingL), // 상단 여백 축소
                         _buildTrackInfo(context, track),
-                        const SizedBox(height: AppTheme.spacingXL * 2),
+                        const SizedBox(height: AppTheme.spacingXL),
                         _buildProgressBar(context, audioProvider),
                         const SizedBox(height: AppTheme.spacingXL),
                         _buildControls(context, audioProvider),
-                        const SizedBox(height: AppTheme.spacingXL),
-                        if (AppConfig.showQuickFeedback) _buildQuickFeedback(context),
-                        if (AppConfig.showQuickFeedback) const SizedBox(height: AppTheme.spacingXL),
+                        const SizedBox(height: AppTheme.spacingL),
+                        if (AppConfig.showQuickFeedback)
+                          _buildQuickFeedback(context),
+                        if (AppConfig.showQuickFeedback)
+                          const SizedBox(height: AppTheme.spacingL),
                         _buildVolumeControls(context, audioProvider),
                         const SizedBox(height: 120), // 자연음 선택기를 위한 여백
                       ],
@@ -230,16 +233,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-
   Widget _buildTrackInfo(BuildContext context, track) {
     return Column(
       children: [
         Text(
           track.title,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -248,8 +250,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         Text(
           track.artist,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -283,14 +285,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
               Text(
                 _formatDuration(audioProvider.position),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
               ),
               Text(
                 _formatDuration(audioProvider.duration),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
               ),
             ],
           ),
@@ -308,8 +310,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
             audioProvider.isRepeatOne
                 ? Icons.repeat_one
                 : audioProvider.isRepeatAll
-                    ? Icons.repeat
-                    : Icons.repeat,
+                ? Icons.repeat
+                : Icons.repeat,
             color: (audioProvider.isRepeatOne || audioProvider.isRepeatAll)
                 ? AppTheme.primaryColor
                 : Colors.white.withValues(alpha: 0.7),
@@ -365,9 +367,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         IconButton(
           icon: const Icon(Icons.skip_next, color: Colors.white),
           iconSize: 40,
-          onPressed: audioProvider.hasNext
-              ? audioProvider.skipToNext
-              : null,
+          onPressed: audioProvider.hasNext ? audioProvider.skipToNext : null,
         ),
         IconButton(
           icon: Icon(
@@ -383,7 +383,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-  Widget _buildVolumeControls(BuildContext context, AudioProvider audioProvider) {
+  Widget _buildVolumeControls(
+    BuildContext context,
+    AudioProvider audioProvider,
+  ) {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacingL),
       decoration: BoxDecoration(
@@ -400,7 +403,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6,
+                    ),
                   ),
                   child: Slider(
                     value: audioProvider.musicVolume,
@@ -412,9 +417,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               Text(
                 '${(audioProvider.musicVolume * 100).toInt()}%',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
               ),
             ],
           ),
@@ -426,21 +431,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6,
+                    ),
                   ),
                   child: Slider(
                     value: audioProvider.natureVolume,
                     onChanged: audioProvider.setNatureVolume,
                     activeColor: AppTheme.secondaryColor,
-                    inactiveColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
+                    inactiveColor: AppTheme.secondaryColor.withValues(
+                      alpha: 0.2,
+                    ),
                   ),
                 ),
               ),
               Text(
                 '${(audioProvider.natureVolume * 100).toInt()}%',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
               ),
             ],
           ),
@@ -575,17 +584,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   ImageProvider _getTrackImageProvider(dynamic track) {
-    // Supabase Storage에서 이미지 가져오기 (곡 파일명 기반)
-    if (track.fileName != null) {
-      // 파일명에서 확장자 제거하고 소문자로 변환 후 .jpg로 매핑
-      final filenameWithoutExt = track.fileName.split('.').first.toLowerCase();
-      final imagePath = '$filenameWithoutExt.jpg';
-      // 메인 재생화면은 고화질 images 폴더 사용
-      final imageUrl = SupabaseConfig.getImageUrl(imagePath);
+    // thumbnail URL에서 파일명 추출하여 CDN 이미지 URL 생성
+    if (track.thumbnail != null && track.thumbnail!.isNotEmpty) {
+      // thumbnail URL에서 파일명만 추출
+      // 예: .../thumbnails/s001_happiest_dream.jpg -> s001_happiest_dream.jpg
+      final thumbnailUrl = track.thumbnail as String;
+      final fileName = thumbnailUrl.split('/').last;
+      
+      // CDN images 폴더 URL로 변환
+      final imageUrl = SupabaseConfig.getImageUrl(fileName);
       return CachedNetworkImageProvider(imageUrl);
     }
-    
+
     // 기본 이미지
-    return const AssetImage('assets/images/sleep1.png');
+    return const AssetImage('assets/images/splash_background.jpg');
   }
 }

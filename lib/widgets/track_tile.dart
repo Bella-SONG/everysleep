@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/track.dart';
 import '../constants/app_theme.dart';
-import '../config/supabase_config.dart';
 
 class TrackTile extends StatelessWidget {
   final Track track;
@@ -25,14 +24,10 @@ class TrackTile extends StatelessWidget {
   });
 
   Widget _buildTrackImage() {
-    // Supabase Storage에서 썸네일 이미지 가져오기 (곡 파일명 기반)
-    if (track.fileName != null) {
-      final filenameWithoutExt = track.fileName!.split('.').first.toLowerCase();
-      final imagePath = '$filenameWithoutExt.jpg';
-      final imageUrl = SupabaseConfig.getThumbnailUrl(imagePath);
-      
+    // track_details 뷰에서 직접 썸네일 URL 사용
+    if (track.thumbnail != null && track.thumbnail!.isNotEmpty) {
       return CachedNetworkImage(
-        imageUrl: imageUrl,
+        imageUrl: track.thumbnail!,
         width: 60,
         height: 60,
         fit: BoxFit.cover,

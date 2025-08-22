@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../models/track.dart';
 import '../models/nature_sound.dart';
 import '../repositories/track_repository.dart';
@@ -30,7 +31,11 @@ class TrackRepositoryProvider with ChangeNotifier {
   void _setLoading(bool loading) {
     if (_isLoading != loading) {
       _isLoading = loading;
-      notifyListeners();
+      // build 중이 아닐 때만 즉시 notifyListeners 호출
+      // build 중일 때는 다음 프레임에서 호출
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
   

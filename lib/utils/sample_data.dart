@@ -9,8 +9,8 @@ class SampleData {
         code: 'E001',
         title: '새소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e001_bird_asmr1.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e001_bird_asmr1.jpg', // 새소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e001_bird_asmr1.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e001_bird_asmr1.jpg', // 새소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -26,8 +26,8 @@ class SampleData {
         code: 'E002',
         title: '장작불소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e002_fire_asmr.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e002_fire_asmr.jpg', // 장작불소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e002_fire_asmr.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e002_fire_asmr.jpg', // 장작불소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -43,8 +43,8 @@ class SampleData {
         code: 'E003',
         title: '빗소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e003_rain_asmr2.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e003_rain_asmr2.jpg', // 빗소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e003_rain_asmr2.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e003_rain_asmr2.jpg', // 빗소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -60,8 +60,8 @@ class SampleData {
         code: 'E004',
         title: '물소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e004_water_asmr.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e005_wave_asmr.jpg', // 물소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e004_water_asmr.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e005_wave_asmr.jpg', // 물소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -77,8 +77,8 @@ class SampleData {
         code: 'E005',
         title: '파도소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e005_wave_asmr.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e004_water_asmr.jpg', // 파도소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e005_wave_asmr.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e004_water_asmr.jpg', // 파도소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -94,8 +94,8 @@ class SampleData {
         code: 'E006',
         title: '바람소리(ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/e006_wind_asmr.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/e006_wind_asmr.jpg', // 바람소리(ASMR)
+        url: 'https://everysleep.b-cdn.net/tracks/e006_wind_asmr.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/e006_wind_asmr.jpg', // 바람소리(ASMR)
         category: '자연음',
         durationSeconds: null, // 반복 재생
         bpm: null,
@@ -122,8 +122,8 @@ class SampleData {
         code: 'S001',
         title: '가장 행복한 꿈',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s001_happiest_dream.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/s001_happiest_dream.jpg',
+        url: 'https://everysleep.b-cdn.net/tracks/s001_happiest_dream.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/s001_happiest_dream.jpg',
         category: '수면음악',
         durationSeconds: 260, // 04:20
         bpm: 70,
@@ -138,7 +138,7 @@ class SampleData {
         code: 'S016',
         title: '어른들의 자장가',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s016_adults_lullaby.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s016_adults_lullaby.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=300&h=300&fit=crop', // 자고있는 사람 - 밤의 저조도 분위기
         category: '수면음악',
         durationSeconds: 300, // 05:00
@@ -154,8 +154,8 @@ class SampleData {
         code: 'S018',
         title: '좋은 꿈을 꿀거예요',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s018_have_good_dream.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/c2.jpg', // 좋은 꿈을 꿀거예요 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s018_have_good_dream.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/c2.jpg', // 좋은 꿈을 꿀거예요 커스텀 이미지
         category: '수면음악',
         durationSeconds: 256, // 04:16
         bpm: 73,
@@ -172,8 +172,8 @@ class SampleData {
         code: 'S003',
         title: '다정한 휴식',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s003_gentle_jazz.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/re2.jpg', // 다정한 휴식 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s003_gentle_jazz.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/re2.jpg', // 다정한 휴식 커스텀 이미지
         category: '명상음악',
         durationSeconds: 183, // 03:03
         bpm: 80,
@@ -188,8 +188,8 @@ class SampleData {
         code: 'S019',
         title: '평화로운 나의 아침',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s019_peaceful_morning.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/f3.jpg', // 평화로운 나의 아침 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s019_peaceful_morning.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/f3.jpg', // 평화로운 나의 아침 커스텀 이미지
         category: '명상음악',
         durationSeconds: 193, // 03:13
         bpm: 60,
@@ -206,8 +206,8 @@ class SampleData {
         code: 'S022',
         title: '햇살 가득한 하루',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s022_sunshine_day.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/f4.jpg', // 햇살 가득한 하루 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s022_sunshine_day.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/f4.jpg', // 햇살 가득한 하루 커스텀 이미지
         category: '활력음악',
         durationSeconds: 587, // 09:47
         bpm: 62,
@@ -222,8 +222,8 @@ class SampleData {
         code: 'S023',
         title: '햇살 가득한 하루 (ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s023_sunshine_day_asmr.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/f4.jpg', // 햇살 가득한 하루 (ASMR) 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s023_sunshine_day_asmr.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/f4.jpg', // 햇살 가득한 하루 (ASMR) 커스텀 이미지
         category: '활력음악',
         durationSeconds: 589, // 09:49
         bpm: 62,
@@ -240,8 +240,8 @@ class SampleData {
         code: 'S004',
         title: '들꽃처럼 피어나는 희망',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s004_hope_flower.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/f1.jpg', // 들꽃처럼 피어나는 희망 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s004_hope_flower.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/f1.jpg', // 들꽃처럼 피어나는 희망 커스텀 이미지
         category: '수면음악',
         durationSeconds: 230, // 03:50
         bpm: 115,
@@ -256,8 +256,8 @@ class SampleData {
         code: 'S024',
         title: '행복이 있는 식탁',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s024_happy_table.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/shche_-team-0dszrg9-V1o-unsplash.jpg', // 행복이 있는 식탁 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s024_happy_table.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/shche_-team-0dszrg9-V1o-unsplash.jpg', // 행복이 있는 식탁 커스텀 이미지
         category: '활력음악',
         durationSeconds: 123, // 02:03
         bpm: 120,
@@ -272,7 +272,7 @@ class SampleData {
         code: 'S028',
         title: '벚꽃이 휘날리던 날',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s028_day_blossom.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s028_day_blossom.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=300&h=300&fit=crop', // 벚꽃이 휘날리는 봄 거리
         category: '활력음악',
         durationSeconds: 114, // 01:54
@@ -288,7 +288,7 @@ class SampleData {
         code: 'S029',
         title: '행복의 봄',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s029_happy_spring.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s029_happy_spring.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=300&h=300&fit=crop', // 봄 새싹과 꽃들
         category: '수면음악',
         durationSeconds: 117, // 01:57
@@ -304,7 +304,7 @@ class SampleData {
         code: 'S031',
         title: '재즈 레스토랑',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s031_jazz_restaurant.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s031_jazz_restaurant.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=300&h=300&fit=crop', // 세련된 레스토랑 내부
         category: '활력음악',
         durationSeconds: 198, // 03:18
@@ -322,8 +322,8 @@ class SampleData {
         code: 'S002',
         title: '감사의 일기',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s002_thanks_diary.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/thankyou.jpg', // 감사의 일기
+        url: 'https://everysleep.b-cdn.net/tracks/s002_thanks_diary.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/thankyou.jpg', // 감사의 일기
         category: '수면음악',
         durationSeconds: 150, // 02:30
         bpm: 65,
@@ -338,7 +338,7 @@ class SampleData {
         code: 'S005',
         title: '따스한 봄날의 노래',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s005_warm_spring_song.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s005_warm_spring_song.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&h=300&fit=crop', // 따스한 봄 거리 풍경
         category: '수면음악',
         durationSeconds: 312, // 05:12
@@ -354,8 +354,8 @@ class SampleData {
         code: 'S006',
         title: '마음을 다독이며',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s006_soothing_heart.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/giulia-bertelli-dvXGnwnYweM-unsplash.jpg', // 마음을 다독이며 - 가슴에 손을 올린 따뜻한 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s006_soothing_heart.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/giulia-bertelli-dvXGnwnYweM-unsplash.jpg', // 마음을 다독이며 - 가슴에 손을 올린 따뜻한 이미지
         category: '수면음악',
         durationSeconds: 323, // 05:23
         bpm: 60,
@@ -370,8 +370,8 @@ class SampleData {
         code: 'S007',
         title: '별빛이 남긴 추억',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s007_star_memory.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/marek-piwnicki-iwabZE-qN_U-unsplash.jpg', // 별빛이 남긴 추억 커스텀 이미지
+        url: 'https://everysleep.b-cdn.net/tracks/s007_star_memory.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/marek-piwnicki-iwabZE-qN_U-unsplash.jpg', // 별빛이 남긴 추억 커스텀 이미지
         category: '수면음악',
         durationSeconds: 190, // 03:10
         bpm: 65,
@@ -386,7 +386,7 @@ class SampleData {
         code: 'S008',
         title: '비오는 경복궁 돌담길',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s008_rainy_gyeongbokgung.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s008_rainy_gyeongbokgung.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1545221167-d3fba6820656?w=300&h=300&fit=crop', // 경복궁 돌담
         category: '명상음악',
         durationSeconds: 224, // 03:44
@@ -402,7 +402,7 @@ class SampleData {
         code: 'S009',
         title: '여름의 마음',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s009_heart_summer.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s009_heart_summer.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=300&fit=crop', // 여름 풍경
         category: '명상음악',
         durationSeconds: 502, // 08:22
@@ -418,7 +418,7 @@ class SampleData {
         code: 'S010',
         title: '여름의 마음 (ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s010_heart_summer_asmr.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s010_heart_summer_asmr.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=300&fit=crop', // 여름 풍경
         category: '명상음악',
         durationSeconds: 450, // 07:30
@@ -435,7 +435,7 @@ class SampleData {
         code: 'S011',
         title: '빗소리에 눈을 뜬 아침',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s011_morning_awake_asmr.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s011_morning_awake_asmr.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=300&h=300&fit=crop', // 아침 빗소리
         category: '명상음악',
         durationSeconds: 311, // 05:11
@@ -452,7 +452,7 @@ class SampleData {
         code: 'S012',
         title: '빗소리와 책장을 넘기며',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s012_book_pages_asmr.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s012_book_pages_asmr.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=300&fit=crop', // 책과 빗소리
         category: '명상음악',
         durationSeconds: 192, // 03:12
@@ -469,7 +469,7 @@ class SampleData {
         code: 'S013',
         title: '선선한 봄날의 기억',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s013_spring_memory.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s013_spring_memory.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=300&h=300&fit=crop', // 봄날 풍경
         category: '수면음악',
         durationSeconds: 474, // 07:54
@@ -485,7 +485,7 @@ class SampleData {
         code: 'S014',
         title: '아름다운 쉼표',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s014_beautiful_comma.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s014_beautiful_comma.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop', // 휴식
         category: '수면음악',
         durationSeconds: 259, // 04:19
@@ -501,7 +501,7 @@ class SampleData {
         code: 'S015',
         title: '쉼이있는 순간',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s015_moment_rest.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s015_moment_rest.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1516905365441-80295fccd862?w=300&h=300&fit=crop', // 쉼
         category: '명상음악',
         durationSeconds: 244, // 04:04
@@ -517,7 +517,7 @@ class SampleData {
         code: 'S017',
         title: '오늘도 수고했어요',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s017_well_today.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s017_well_today.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop', // 위로
         category: '수면음악',
         durationSeconds: 546, // 09:06
@@ -533,7 +533,7 @@ class SampleData {
         code: 'S020',
         title: '푸르른 공원 산책',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s020_park_walk.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s020_park_walk.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=300&fit=crop', // 공원 산책
         category: '활력음악',
         durationSeconds: 275, // 04:35
@@ -549,7 +549,7 @@ class SampleData {
         code: 'S021',
         title: '푸르른 공원 산책 (ASMR)',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s021_park_walk_asmr.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s021_park_walk_asmr.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=300&fit=crop', // 공원 산책
         category: '활력음악',
         durationSeconds: 275, // 04:35
@@ -566,7 +566,7 @@ class SampleData {
         code: 'S025',
         title: '흰나비의 날갯짓',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s025_butterfly_wings.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s025_butterfly_wings.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=300&h=300&fit=crop', // 나비
         category: '활력음악',
         durationSeconds: 337, // 05:37
@@ -582,7 +582,7 @@ class SampleData {
         code: 'S026',
         title: '비 내리는 창가에 앉아',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s026_rainy_chill.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s026_rainy_chill.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=300&h=300&fit=crop', // 창가 빗소리
         category: '활력음악',
         durationSeconds: 951, // 15:51
@@ -598,7 +598,7 @@ class SampleData {
         code: 'S027',
         title: '매일 더 사랑',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s027_more_love.mp3',
+        url: 'https://everysleep.b-cdn.net/tracks/s027_more_love.mp3',
         thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=300&h=300&fit=crop', // 사랑
         category: '활력음악',
         durationSeconds: 238, // 03:58
@@ -614,8 +614,8 @@ class SampleData {
         code: 'S030',
         title: '희망의 빛을 따라서',
         artist: 'everysleep',
-        url: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/tracks/s030_following_hope.mp3',
-        thumbnail: 'https://jxfeszksnsyelaqcfapv.supabase.co/storage/v1/object/public/everysleeptrack/thumbnails/wolf-zimmermann-6sf5rf8QYFE-unsplash.jpg',
+        url: 'https://everysleep.b-cdn.net/tracks/s030_following_hope.mp3',
+        thumbnail: 'https://everysleep.b-cdn.net/thumbnails/wolf-zimmermann-6sf5rf8QYFE-unsplash.jpg',
         category: '수면음악',
         durationSeconds: 144, // 02:24
         bpm: 65,

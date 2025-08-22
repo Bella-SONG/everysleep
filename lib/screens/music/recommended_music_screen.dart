@@ -490,9 +490,8 @@ class _RecommendedMusicScreenState extends State<RecommendedMusicScreen>
             onTap: () async {
               await audioProvider.loadPlaylist(_tracks, startIndex: index);
               await audioProvider.play();
-              if (mounted) {
-                context.push('/player');
-              }
+              if (!context.mounted) return;
+              context.push('/player');
             },
           ),
         );

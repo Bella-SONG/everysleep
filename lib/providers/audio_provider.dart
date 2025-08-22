@@ -17,7 +17,7 @@ class AudioProvider extends ChangeNotifier {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   double _musicVolume = 0.7;
-  double _natureVolume = 0.3;
+  double _natureVolume = 0.2;
   bool _isRepeatOne = false;
   bool _isRepeatAll = false;
   Duration? _sleepTimerDuration;
@@ -69,7 +69,7 @@ class AudioProvider extends ChangeNotifier {
 
     _subscriptions.add(_musicPlayer.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
-        // 완료된 트랙 정보를 미리 저장 (skipToNext 호출 전에)
+        // 완료된 트랙 정보를 미리 저장
         final completedTrack = _currentTrack;
         
         // 트랙 완료 시 피드백 트리거 (깊은 수면 시간대가 아닌 경우에만)
@@ -77,18 +77,23 @@ class AudioProvider extends ChangeNotifier {
         final isDeepSleepTime = now.hour >= 0 && now.hour < 5; // 자정~오전 5시
         
         if (completedTrack != null && !isDeepSleepTime && _onTrackCompleted != null) {
-          // 2초 후 피드백 다이얼로그 표시 (완료된 트랙 정보 사용)
+          // 2초 후 피드백 다이얼로그 표시
           Future.delayed(const Duration(seconds: 2), () {
             _onTrackCompleted!(completedTrack);
           });
         }
         
-        if (_isRepeatOne) {
-          _musicPlayer.seek(Duration.zero);
-          _musicPlayer.play();
-        } else {
-          skipToNext();
-        }
+        // 네이티브 플레이리스트를 사용하므로 수동 처리 불필요
+        // just_audio가 자동으로 다음 트랙으로 진행하거나 반복 처리
+      }
+    }));
+
+    // 현재 재생 중인 트랙 인덱스 추적
+    _subscriptions.add(_musicPlayer.currentIndexStream.listen((index) {
+      if (index != null && index < _playlist.length) {
+        _currentIndex = index;
+        _currentTrack = _playlist[index];
+        notifyListeners();
       }
     }));
 
@@ -124,8 +129,8 @@ class AudioProvider extends ChangeNotifier {
       id: track.id.toString(),
       album: track.category,
       title: track.title,
-      artist: track.artist ?? 'EverySleep',
-      artUri: track.thumbnail?.isNotEmpty == true ? Uri.parse(track.thumbnail!) : null,
+      artist: track.artist.isEmpty ? 'EverySleep' : track.artist,
+      artUri: (track.thumbnail != null && track.thumbnail!.isNotEmpty) ? Uri.parse(track.thumbnail!) : null,
     );
     
     await _musicPlayer.setAudioSource(
@@ -138,11 +143,41 @@ class AudioProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _createPlaylistSource(List<Track> tracks) async {
+    final audioSources = tracks.map((track) {
+      final mediaItem = MediaItem(
+        id: track.id.toString(),
+        album: track.category,
+        title: track.title,
+        artist: track.artist.isEmpty ? 'EverySleep' : track.artist,
+        artUri: (track.thumbnail != null && track.thumbnail!.isNotEmpty) ? Uri.parse(track.thumbnail!) : null,
+      );
+      
+      return AudioSource.uri(
+        Uri.parse(track.url),
+        tag: mediaItem,
+      );
+    }).toList();
+    
+    // setAudioSources 사용 (ConcatenatingAudioSource deprecated)
+    await _musicPlayer.setAudioSources(audioSources, initialIndex: _currentIndex);
+  }
+
   Future<void> loadPlaylist(List<Track> tracks, {int startIndex = 0}) async {
     _playlist = tracks;
     _currentIndex = startIndex;
     if (tracks.isNotEmpty) {
-      await loadTrack(tracks[startIndex]);
+      _currentTrack = tracks[startIndex];
+      await _createPlaylistSource(tracks);
+      
+      // 반복 모드 설정
+      await _musicPlayer.setLoopMode(_isRepeatOne 
+        ? LoopMode.one 
+        : _isRepeatAll 
+          ? LoopMode.all 
+          : LoopMode.off);
+      
+      notifyListeners();
     }
   }
 
@@ -172,24 +207,11 @@ class AudioProvider extends ChangeNotifier {
   }
 
   Future<void> skipToPrevious() async {
-    if (hasPrevious) {
-      _currentIndex--;
-      await loadTrack(_playlist[_currentIndex]);
-      await play();
-    }
+    await _musicPlayer.seekToPrevious();
   }
 
   Future<void> skipToNext() async {
-    if (hasNext) {
-      _currentIndex++;
-      await loadTrack(_playlist[_currentIndex]);
-      await play();
-    } else if (_isRepeatAll && _playlist.isNotEmpty) {
-      // 플레이리스트 반복: 첫 번째 곡으로 돌아가기
-      _currentIndex = 0;
-      await loadTrack(_playlist[_currentIndex]);
-      await play();
-    }
+    await _musicPlayer.seekToNext();
   }
 
   void setMusicVolume(double volume) {
@@ -208,6 +230,9 @@ class AudioProvider extends ChangeNotifier {
     _isRepeatOne = !_isRepeatOne;
     if (_isRepeatOne) {
       _isRepeatAll = false; // 한 곡 반복 시 플레이리스트 반복 해제
+      _musicPlayer.setLoopMode(LoopMode.one);
+    } else {
+      _musicPlayer.setLoopMode(LoopMode.off);
     }
     notifyListeners();
   }
@@ -216,6 +241,9 @@ class AudioProvider extends ChangeNotifier {
     _isRepeatAll = !_isRepeatAll;
     if (_isRepeatAll) {
       _isRepeatOne = false; // 플레이리스트 반복 시 한 곡 반복 해제
+      _musicPlayer.setLoopMode(LoopMode.all);
+    } else {
+      _musicPlayer.setLoopMode(LoopMode.off);
     }
     notifyListeners();
   }
@@ -238,10 +266,12 @@ class AudioProvider extends ChangeNotifier {
       debugPrint('자연음 로드 시작: ${sound.name}, URL: ${sound.url}');
       _currentNatureSound = sound;
       
-      // 소스 설정 후 재생
-      debugPrint('자연음 소스 설정 및 재생 시작');
-      await _naturePlayer.setSource(ap.UrlSource(sound.url));
-      await _naturePlayer.resume(); // play 대신 resume 사용
+      // 음악과 동시 재생을 위해 mediaPlayer 모드 유지
+      await _naturePlayer.setPlayerMode(ap.PlayerMode.mediaPlayer);
+      
+      // play 메서드를 직접 사용 (setSource + resume 대신)
+      debugPrint('자연음 재생 시작');
+      await _naturePlayer.play(ap.UrlSource(sound.url));
       debugPrint('자연음 재생 명령 완료');
       
       notifyListeners();

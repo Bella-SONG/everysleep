@@ -52,14 +52,12 @@ class SupabaseConfig {
   static StorageFileApi get imageStorage => 
       storage.from('everysleeptrack');
   
-  // 이미지 URL 헬퍼
+  // 이미지 URL 헬퍼 (CDN 사용 - 재생화면용 고화질)
   static String getImageUrl(String imagePath) {
-    final url = _client.storage.from('everysleeptrack').getPublicUrl('images/$imagePath');
-    // 이미지 최적화를 위한 쿼리 파라미터 추가
-    return '$url?width=300&quality=80';
+    return 'https://everysleep.b-cdn.net/images/$imagePath';
   }
   
-  // 썸네일 이미지 URL 헬퍼 (작은 이미지)
+  // 썸네일 이미지 URL 헬퍼 (Supabase Storage 사용 - 비용 절약)
   static String getThumbnailUrl(String imagePath) {
     return _client.storage.from('everysleeptrack').getPublicUrl('thumbnails/$imagePath');
   }
